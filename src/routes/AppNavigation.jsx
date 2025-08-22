@@ -11,7 +11,7 @@ function AppNavigation() {
       element: <AppIndex />,
       children: [
         {
-          path: "/login",
+          path: "/",
           element: <Login />,
           children: [{ index: true }],
         },

@@ -91,7 +91,7 @@ export default function Register() {
 
         <p className="mt-5">
           Already have an account?{" "}
-          <span onClick={()=>navigate("/login")}>Login here</span>
+          <span onClick={()=>navigate("/")}>Login here</span>
         </p>
       </form>
     </div>

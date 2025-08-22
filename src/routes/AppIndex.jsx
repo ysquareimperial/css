@@ -5,9 +5,9 @@ import NavMenu from "../componets/NavMenu";
 export default function AppIndex() {
   return (
     <div className="m-0">
-      <div className="">
+      {/* <div className="">
         <NavMenu />
-      </div>
+      </div> */}
 
       <div className="p-0">
         <Outlet />
