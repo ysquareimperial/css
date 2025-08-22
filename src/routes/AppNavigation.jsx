@@ -11,8 +11,8 @@ function AppNavigation() {
       element: <AppIndex />,
       children: [
         {
-          path: "/",
-          element: <Home />,
+          path: "/login",
+          element: <Login />,
           children: [{ index: true }],
         },
 
@@ -26,10 +26,10 @@ function AppNavigation() {
       path: "/register",
       element: <Register />,
     },
-    {
-      path: "/login",
-      element: <Login />,
-    },
+    // {
+    //   path: "/login",
+    //   element: <Login />,
+    // },
   ]);
   return element;
 }
