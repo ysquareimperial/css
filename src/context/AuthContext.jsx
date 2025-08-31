@@ -1,25 +1,31 @@
+// context/AuthContext.jsx
 import { createContext, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // store logged-in user
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [user, setUser] = useState(null); // { role: "admin" | "reviewer" | "author" }
 
-  const login = (userData, jwt) => {
-    setUser(userData);
-    setToken(jwt);
-    localStorage.setItem("token", jwt);
+  const navigate = useNavigate();
+
+  const login = (role) => {
+    const fakeUser = { role };
+    setUser(fakeUser);
+
+    // redirect user based on role
+    if (role === "admin") navigate("/dashboard/admin");
+    if (role === "reviewer") navigate("/dashboard/reviewer");
+    if (role === "author") navigate("/dashboard/author");
   };
 
   const logout = () => {
     setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
+    navigate("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

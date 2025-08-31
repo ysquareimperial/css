@@ -11,8 +11,6 @@ function App() {
 
   return (
     <>
-      {/* <Login />
-      <Register /> */}
       <AppNavigation />
     </>
   );

@@ -2,37 +2,24 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+const Login = () => {
   const { login } = useAuth();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      // TODO: Replace with backend API call
-      const res = await fetch("http://localhost:8000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        login(data.user, data.token);
-      } else {
-        alert(data.detail || "Login failed");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong");
-    } finally {
-      setLoading(false);
+    // fake authentication mapping
+    if (email === "admin@test.com" && password === "admin123") {
+      login("admin"); // will set user.role = "admin" and redirect
+    } else if (email === "reviewer@test.com" && password === "reviewer123") {
+      login("reviewer");
+    } else if (email === "author@test.com" && password === "author123") {
+      login("author");
+    } else {
+      setError("Invalid credentials");
     }
   };
 
@@ -49,36 +36,29 @@ export default function Login() {
         <h2 className="text-xl font-semibold mb-6 text-gray-600">Login</h2>
         <input
           type="email"
-          name="email"
           placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
-          required
+          className="w-full border p-2 rounded mb-3"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-
         <input
           type="password"
-          name="password"
           placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
-          required
+          className="w-full border p-2 rounded mb-3"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-        >
-          {loading ? "Logging in..." : "Login"}
+        {error && <p className="text-red-500 mb-3">{error}</p>}
+        <button className="w-full bg-blue-500 text-white p-2 rounded">
+          Login
         </button>
         <p className="mt-5">
           Don't have an account?{" "}
-          <span onClick={()=>navigate("/register")}>Register here</span>
+          <span onClick={() => navigate("/register")}>Register here</span>
         </p>
       </form>
     </div>
   );
-}
+};
+
+export default Login;
