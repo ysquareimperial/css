@@ -4,12 +4,12 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 
 // Import images at the top of your file
-import s1 from "../assets/s1.JPG";
-import s2 from "../assets/s2.JPEG";
-import s3 from "../assets/s3.JPEG";
-import s4 from "../assets/s4.JPEG";
-import s5 from "../assets/s5.JPEG";
-import s6 from "../assets/s6.JPEG";
+// import s1 from "../assets/s1.JPG";
+// import s2 from "../assets/s2.JPEG";
+// import s3 from "../assets/s3.JPEG";
+// import s4 from "../assets/s4.JPEG";
+// import s5 from "../assets/s5.JPEG";
+// import s6 from "../assets/s6.JPEG";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -296,7 +296,7 @@ function ImageSlider() {
   const slides = [
     {
       id: 1,
-      img: s1,
+      img: "https://images.unsplash.com/photo-1559223607-a43c990c692c?w=800&h=400&fit=crop&crop=center",
       caption: "Welcome to the Conference",
     },
     {
