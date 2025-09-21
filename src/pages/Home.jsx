@@ -194,9 +194,8 @@ function Navbar() {
   const navigate = useNavigate();
 
   return (
- <nav className="bg-white shadow-md relative z-20">
+    <nav className="bg-white shadow-md relative z-20">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        
         {/* Left Section: Logo + Menus */}
         <div className="flex items-center space-x-8">
           {/* ✅ Logo */}
@@ -204,7 +203,11 @@ function Navbar() {
             className="flex items-center cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img src='https://res.cloudinary.com/dx5ilizca/image/upload/v1758417637/logo_s3nzhd.png' alt="ICSE 2025" className="h-10 w-auto" />
+            <img
+              src="https://res.cloudinary.com/dx5ilizca/image/upload/v1758417637/logo_s3nzhd.png"
+              alt="ICSE 2025"
+              className="h-10 w-auto"
+            />
           </div>
 
           {/* Menus */}
@@ -393,37 +396,55 @@ function ImageSlider() {
 function WelcomeSection() {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className=" px-4 py-3 font-semibold text-lg">
-        Welcome to ICSE 2025
+      <div className="px-4 py-3 font-semibold text-lg">
+        Welcome to the Faculty of Computing and Mathematical Sciences Conference
       </div>
       <div className="p-4 space-y-3 text-gray-700 text-sm leading-relaxed">
         <p>
-          ICSE, the IEEE/ACM International Conference on Software Engineering,
-          is the premier software engineering conference. It was held April
-          27–May 3 2025 in Ottawa. Core conference days were Wednesday April 30
-          to Friday May 2.
+          The Faculty of Computing and Mathematical Sciences,{" "}
+          <span className="font-semibold">Aliko Dangote University, Wudil</span>
+          , proudly welcomes you to its Annual Conference on Computing and
+          Applied Research. This event provides a platform for students, faculty
+          members, and researchers to share ideas, present findings, and discuss
+          emerging trends in the fields of computing and mathematics.
         </p>
+
         <p>
-          This page is for the historical record. The proceedings are available
-          here.
+          The conference will be held from{" "}
+          <span className="font-semibold">June 10–14, 2025</span> at the
+          University’s Main Auditorium. Core conference days are{" "}
+          <span className="font-semibold">
+            Wednesday June 11 to Friday June 13
+          </span>
+          .
         </p>
-        <p>See you all in 2026 in Rio.</p>
+
         <p>
-          2025 marks the 50th anniversary of ICSE, which was first held in 1975!
+          This page serves as an information hub for all participants. Details
+          of accepted papers and the digital proceedings will be made available
+          here after the conference.
         </p>
+
         <p>
-          If you are registered, pick up your badge and envelope at the
-          registration desk which opens at 8 a.m. Sunday April 27th in the RCC
-          area of the second floor of the Rogers Centre. It will open at 8 a.m.
-          every morning throughout the conference, except Wednesday April 30th
-          when it will open at 7:30 a.m.. It will remain open until about 5:30
-          most days. If you are not registered yet, you can register online or
-          in person at the registration desk.
+          Registration begins at{" "}
+          <span className="font-semibold">
+            8:00 a.m. on Tuesday June 10, 2025
+          </span>{" "}
+          at the Faculty of Computing registration desk located on the first
+          floor of the ICT Complex. The desk will open daily at 8:00 a.m. and
+          close by 5:30 p.m.
         </p>
+
         <p>
-          ICSE provides a forum where researchers, practitioners, and educators
-          gather together to present and discuss research results, innovations,
-          trends, experiences and issues in the field of software engineering.
+          The conference brings together scholars, practitioners, and students
+          to exchange knowledge, explore innovations, and promote collaboration
+          in advancing computing and mathematical sciences within the region and
+          beyond.
+        </p>
+
+        <p>
+          We look forward to your participation and contribution toward making
+          this year’s conference a remarkable success.
         </p>
       </div>
     </div>
@@ -433,51 +454,53 @@ function WelcomeSection() {
 function KeyPages() {
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h2 className="text-lg font-semibold mb-3">Key pages:</h2>
+      <h2 className="text-lg font-semibold mb-3">Key Pages:</h2>
 
       <div className="space-y-2">
         <p className="flex flex-wrap gap-x-3">
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Program Filterable by Day, Room and Activity
+            Conference Program (Filter by Day, Session, and Activity)
           </a>
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Links to Key Program Elements
+            Links to Key Conference Sessions
           </a>
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Your Program
+            My Schedule
           </a>
           <span className="text-sm text-gray-600">
-            (if you have selected choices)
+            (if you have selected activities)
           </span>
         </p>
 
         <p className="flex flex-wrap gap-x-3">
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Social Media
+            Social Media Updates
           </a>
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Presenting
+            Guidelines for Presenters
           </a>
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Virtual Attendance
+            Virtual Participation
           </a>
         </p>
 
         <p className="flex flex-wrap gap-x-3">
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Registration
+            Registration Information
           </a>
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Getting around Ottawa
+            Getting Around Wudil
           </a>
           <a href="#" className="text-blue-700 font-semibold hover:underline">
-            Sustainability
+            Conference Policies
           </a>
         </p>
       </div>
 
       <p className="text-sm text-gray-700 mt-3">
-        Browse the menus above for many other useful pages.
+        Use the navigation menus above to explore more resources, updates, and
+        important information about the Faculty Conference at Aliko Dangote
+        University, Wudil.
       </p>
     </div>
   );
@@ -487,16 +510,16 @@ function KeyPages() {
 function LatestNews() {
   const news = [
     {
-      date: "Wed 7 May 2025",
-      author: "Timothy Lethbridge",
-      title: "ICSE Keynote talks are on our Youtube Channel",
-      desc: "Videos of ICSE2025 keynote presentations are now on our YouTube Channel! Other session videos will follow in the coming weeks, as we receive requests.",
+      date: "Mon 12 May 2025",
+      author: "Conference Secretariat",
+      title: "Conference Keynote Presentations Now Available",
+      desc: "Videos of keynote presentations from the Faculty of Computing and Mathematical Sciences Annual Conference are now available on our official YouTube channel. Other session recordings will be uploaded in the coming weeks.",
     },
     {
-      date: "Thu 1 May 2025",
-      author: "Christian Cabrera",
-      title: "SEAMS 2025 Wrap-up",
-      desc: "We had a fantastic SEAMS 2025 in Ottawa with a high-quality program comprising eleven long, six short, and two artifact papers, two outstanding keynotes, and a highly interactive panel on self-adaptive systems and AI.",
+      date: "Fri 9 May 2025",
+      author: "Local Organizing Committee",
+      title: "Conference 2025 Wrap-up",
+      desc: "The 2025 Faculty Conference at Aliko Dangote University, Wudil concluded successfully with a rich program of paper presentations, workshops, and keynote lectures. Participants engaged in thought-provoking discussions on computing, AI, and applied mathematics.",
     },
   ];
 
@@ -532,36 +555,32 @@ function LatestNews() {
 /* ---------------- RIGHT CARDS ---------------- */
 function TracksCard() {
   const tracks = [
-    "Main Plenaries",
-    "Panels and Special Sessions",
-    "Research Track",
-    "Software Engineering in Practice (SEIP)",
-    "Software Engineering in Society (SEIS)",
-    "New Ideas and Emerging Results (NIER)",
-    "Journal-first Papers",
-    "Demonstrations",
-    "Artifact Evaluation",
-    "Industry Challenge Track",
-    "Software Engineering Education",
-    "Posters",
-    "Doctoral Symposium",
-    "Shadow Research Track Program Committee",
-    "Workshops",
-    "Tutorials and Technical Briefings",
-    "New Faculty Symposium",
-    "Symposium on Software Engineering in the Global South (SEiGS)",
-    "SRC - ACM Student Research Competition",
-    "Social, Networking and Special Rooms",
-    "Meetings and BOFs",
-    "Student Mentoring Workshop (SMeW)",
-    "Student Volunteers",
+    "Opening Plenary Sessions",
+    "Keynote Addresses",
+    "Research Paper Presentations",
+    "Student Research Track",
+    "Postgraduate Symposium",
+    "Workshops on Emerging Technologies",
+    "Panel Discussions",
+    "Poster Sessions",
+    "Mathematical Modelling and Applied Sciences",
+    "Artificial Intelligence and Data Science",
+    "Software Engineering and Information Systems",
+    "Cybersecurity and Networks",
+    "Mathematics Education",
+    "Tutorials and Technical Sessions",
+    "Roundtable on Innovation and Entrepreneurship",
+    "Community Engagement and Outreach Sessions",
+    "Faculty–Industry Collaboration Track",
+    "Student Innovation Challenge",
+    "Closing Ceremony and Awards",
   ];
 
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       {/* Header */}
       <div className="bg-blue-600 text-white px-4 py-3 font-semibold text-lg">
-        ICSE 2025 Tracks
+        ADUW Faculty Conference Tracks 2025
       </div>
 
       {/* Tracks List */}
@@ -591,16 +610,18 @@ function TracksCard() {
 
 function ImportantDatesCard() {
   const dates = [
-    { date: "Mon 20 Oct 2025", event: "SESoS Paper submission" },
-    { date: "Mon 24 Nov 2025", event: "SESoS Notification of acceptance" },
-    { date: "Mon 8 Dec 2025", event: "SESoS Camera-ready copies" },
+    { date: "Mon 10 Mar 2025", event: "Paper Submission Deadline" },
+    { date: "Mon 14 Apr 2025", event: "Notification of Acceptance" },
+    { date: "Mon 28 Apr 2025", event: "Camera-Ready Paper Submission" },
+    { date: "Tue 6 May 2025", event: "Author Registration Deadline" },
+    { date: "Tue 10 Jun 2025", event: "Conference Opening Ceremony" },
   ];
 
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       {/* Header */}
       <div className="bg-blue-600 text-white px-4 py-3 font-semibold text-lg">
-        Important Dates up till Mon 8 Dec 2025
+        Important Dates (Faculty Conference 2025)
       </div>
 
       {/* Dates List */}
@@ -608,7 +629,7 @@ function ImportantDatesCard() {
         {dates.map((item, index) => (
           <div key={index} className="text-gray-700 text-sm">
             <p className="font-medium text-gray-900">{item.date}</p>
-            <p className="">{item.event}</p>
+            <p>{item.event}</p>
           </div>
         ))}
       </div>
@@ -619,7 +640,7 @@ function ImportantDatesCard() {
           href="#"
           className="text-blue-600 hover:underline text-sm font-medium"
         >
-          All important dates
+          View all important dates
         </a>
       </div>
     </div>
@@ -629,28 +650,44 @@ function ImportantDatesCard() {
 function FeaturedNewsCard() {
   const news = [
     {
-      title: "ICSE Keynote talks are on our Youtube Channel",
-      date: "Wed 7 May 2025",
-    },
-    { title: "SEAMS 2025 Wrap-up", date: "Thu 1 May 2025" },
-    { title: "ICSE2025 Program is now Final!", date: "Thu 10 Apr 2025" },
-    {
-      title: "Last chance for most ICSE hotels is March 25th!",
-      date: "Fri 21 Mar 2025",
+      title: "Keynote Talks Now Available Online",
+      date: "Wed 14 May 2025",
     },
     {
-      title:
-        "Ten authors to share the N-10 best paper award for their 2015 ICSE paper on Android Privacy Leaks",
-      date: "Fri 21 Feb 2025",
+      title: "2025 Faculty Conference Wrap-up",
+      date: "Mon 12 May 2025",
     },
-    { title: "SWEBOK Summit to be held at ICSE 2025", date: "Fri 31 Jan 2025" },
-    { title: "Travel information for ICSE 2025", date: "Sat 18 Jan 2025" },
-    { title: "Tutorials for ICSE 2025 are announced", date: "Fri 8 Nov 2024" },
-    { title: "Keynote Speakers Confirmed!", date: "Tue 3 Sep 2024" },
     {
-      title:
-        "CHASE 2025 Keynotes announced: Prof Margaret-Ann Storey and Prof Alexander Serebrenik will be giving two exciting keynotes at CHASE 2025",
-      date: "Sun 5 May 2024",
+      title: "Final Conference Program Released",
+      date: "Mon 5 May 2025",
+    },
+    {
+      title: "Early Registration Closes April 28",
+      date: "Mon 28 Apr 2025",
+    },
+    {
+      title: "Best Paper Awards Announced",
+      date: "Fri 25 Apr 2025",
+    },
+    {
+      title: "Workshops and Tutorials Confirmed",
+      date: "Mon 14 Apr 2025",
+    },
+    {
+      title: "Travel and Accommodation Guide Published",
+      date: "Fri 4 Apr 2025",
+    },
+    {
+      title: "Conference Call for Papers Extended",
+      date: "Tue 11 Mar 2025",
+    },
+    {
+      title: "Keynote Speakers Announced",
+      date: "Mon 17 Feb 2025",
+    },
+    {
+      title: "Call for Papers Opens for 2025 Faculty Conference",
+      date: "Mon 6 Jan 2025",
     },
   ];
 
@@ -690,28 +727,37 @@ function PostsCard() {
       {/* Header */}
       <div className="bg-blue-600 text-white px-4 py-3 font-semibold text-lg flex items-center space-x-2">
         <i className="fab fa-facebook-square"></i>
-        <span>Posts</span>
+        <span>Faculty Conference Posts</span>
       </div>
 
       {/* Facebook Page Section */}
       <div className="p-4">
         <div className="flex items-center space-x-3 mb-3">
-          <img src="/post.png" alt="ICSE Logo" className="w-10 h-10 rounded" />
+          <img
+            src="/post.jpeg"
+            alt="Faculty Logo"
+            className="w-10 h-10 rounded"
+          />
           <div>
-            <p className="font-semibold text-gray-900">ICSE Conferences</p>
-            <p className="text-sm text-gray-500">2.8K followers</p>
+            <p className="font-semibold text-gray-900">
+              ADUW Computing & Math Sciences Conference
+            </p>
+            <p className="text-sm text-gray-500">1.2K followers</p>
           </div>
           <button className="ml-auto bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700">
-            Follow Page
+            Follow
           </button>
         </div>
 
         {/* Example Post */}
         <div className="border rounded-md overflow-hidden">
-          <img src="/banner.png" alt="Post Banner" className="w-full" />
+          <img src="/s2.jpeg" alt="Conference Banner" className="w-full" />
           <div className="p-3 text-gray-700 text-sm">
-            <p className="font-medium text-gray-900">Call for Demonstrations</p>
-            <p>Call for Tutorials and Technical Briefings</p>
+            <p className="font-medium text-gray-900">Call for Papers</p>
+            <p>
+              Submit your research papers for the 2025 Faculty Conference at
+              Aliko Dangote University, Wudil. Deadline: 10 March 2025.
+            </p>
           </div>
         </div>
       </div>
@@ -797,29 +843,34 @@ function Footer() {
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-5 gap-8">
         {/* Logo & Contact */}
         <div>
-          <h3 className="text-lg font-bold mb-2 text-white">Conference</h3>
-          <p>Email: info@conference.org</p>
-          <p>Phone: +123 456 789</p>
+          <h3 className="text-lg font-bold mb-2 text-white">
+            ADUW Faculty Conference
+          </h3>
+          <p>Email: conference@aduw.edu.ng</p>
+          <p>Phone: +234 701 234 5678</p>
+          <p>Aliko Dangote University, Wudil, Kano State, Nigeria</p>
         </div>
 
         {/* Tracks */}
         <div>
           <h3 className="text-lg font-bold mb-2 text-white">Tracks</h3>
           <ul className="space-y-1">
-            <li>AI</li>
-            <li>Data Science</li>
-            <li>Cybersecurity</li>
+            <li>Artificial Intelligence</li>
+            <li>Data Science & Analytics</li>
+            <li>Cybersecurity & Networks</li>
+            <li>Mathematical Modelling</li>
           </ul>
         </div>
 
-        {/* Cohosted */}
+        {/* Co-hosted */}
         <div>
           <h3 className="text-lg font-bold mb-2 text-white">
-            Co-hosted Conferences
+            Co-located Events
           </h3>
           <ul className="space-y-1">
-            <li>Workshop A</li>
-            <li>Workshop B</li>
+            <li>Student Innovation Challenge</li>
+            <li>Workshops & Tutorials</li>
+            <li>Postgraduate Symposium</li>
           </ul>
         </div>
 
@@ -828,8 +879,8 @@ function Footer() {
           <h3 className="text-lg font-bold mb-2 text-white">Attending</h3>
           <ul className="space-y-1">
             <li>Registration</li>
-            <li>Venue</li>
-            <li>Travel Info</li>
+            <li>Venue Information</li>
+            <li>Travel & Accommodation</li>
           </ul>
         </div>
 
@@ -841,7 +892,7 @@ function Footer() {
               Facebook
             </a>
             <a href="#" className="hover:text-white">
-              Twitter
+              Twitter (X)
             </a>
             <a href="#" className="hover:text-white">
               LinkedIn
