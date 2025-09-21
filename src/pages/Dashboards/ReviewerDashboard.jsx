@@ -28,7 +28,7 @@ export default function ReviewerDashboard() {
     },
   ]);
 
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);  
   const [selectedPaper, setSelectedPaper] = useState(null);
 
   const [reviewForm, setReviewForm] = useState({

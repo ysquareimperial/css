@@ -7,13 +7,15 @@ import AdminDashboard from "../pages/Dashboards/AdminDashboard";
 import ReviewerDashboard from "../pages/Dashboards/ReviewerDashboard";
 import AuthorDashboard from "../pages/Dashboards/AuthorDashboard";
 import ProtectedRoute from "./ProtectedRoute";
+import Home from "../pages/Home";
 
 function AppNavigation() {
   let element = useRoutes([
     {
       element: <AppIndex />,
       children: [
-        { path: "/", element: <Login /> },
+        { path: "/", element: <Home /> },
+
         {
           path: "/dashboard/admin",
           element: (
@@ -41,6 +43,7 @@ function AppNavigation() {
       ],
     },
     { path: "/register", element: <Register /> },
+    { path: "/login", element: <Login /> },
   ]);
   return element;
 }
