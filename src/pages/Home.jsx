@@ -11,6 +11,7 @@ import "react-multi-carousel/lib/styles.css";
 // import s5 from "../assets/s5.JPEG";
 // import s6 from "../assets/s6.JPEG";
 import { useNavigate } from "react-router-dom";
+import ImageGallery from "../componets/ImageGallery";
 
 export default function Home() {
   return (
@@ -19,7 +20,8 @@ export default function Home() {
       <Navbar />
 
       {/* Image Slider */}
-      <ImageSlider />
+      {/* <ImageSlider /> */}
+      <ImageGallery />
 
       {/* Main Section */}
       <main className="container mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -48,101 +50,100 @@ export default function Home() {
 
 function Navbar() {
   const menus = [
-  {
-    label: "Attending",
-    options: [
-      "Venue: Main Auditorium, Aliko Dangote University, Wudil",
-      "Reception Venue: Faculty of Computing Complex",
-      "Registration",
-      "Virtual Attendance",
-      "Presenting at the Conference",
-      "Food & Refreshments",
-      "Campus Tour & Fun Activities",
-      "Hotels and Accommodation",
-      "Getting Around Wudil",
-      "Visa and Travel Information",
-      "Travel Support",
-      "Code of Conduct",
-      "Equity, Diversity, and Inclusion",
-      "FAQ",
-    ],
-  },
-  {
-    label: "Sponsors",
-    options: [
-      "Conference Sponsors",
-      "Aliko Dangote University",
-      "Faculty of Computing and Mathematical Sciences",
-      "Corporate Partners",
-      "Industry Collaborators",
-      "Becoming a Sponsor",
-    ],
-  },
-  {
-    label: "Program",
-    options: [
-      "Conference Program",
-      "My Schedule",
-      "Proceedings",
-      "Program Overview",
-      "Keynotes",
-      "Panels",
-      "Tutorials",
-      "Technical Sessions",
-      "Workshops",
-      "Poster Sessions",
-      "Networking Events",
-      "Student Innovation Challenge",
-      "Recreational Activities",
-      "Filter by Day",
-    ],
-  },
-  {
-    label: "Tracks",
-    options: [
-      "Opening Plenary Sessions",
-      "Keynote Addresses",
-      "Research Paper Presentations",
-      "Postgraduate Symposium",
-      "Student Research Track",
-      "Workshops on Emerging Technologies",
-      "Panel Discussions",
-      "Poster Sessions",
-      "Mathematical Modelling and Applied Sciences",
-      "Artificial Intelligence and Data Science",
-      "Cybersecurity and Networks",
-      "Mathematics Education",
-      "Tutorials and Technical Sessions",
-      "Roundtable on Innovation and Entrepreneurship",
-      "Community Engagement and Outreach",
-      "Faculty–Industry Collaboration Track",
-      "Closing Ceremony & Awards",
-    ],
-  },
-  {
-    label: "Organization",
-    options: [
-      "Conference Steering Committee",
-      "Organizing Committee",
-      "Track Committees",
-      "Reviewers and Volunteers",
-      "Local Arrangements Committee",
-      "Workshops & Tutorials Committee",
-      "Student Activities Committee",
-    ],
-  },
-  {
-    label: "Past Conferences",
-    options: [
-      "Faculty Conference 2025",
-      "Faculty Conference 2024",
-      "Faculty Conference 2023",
-      "Faculty Conference 2022",
-      "Faculty Conference 2021",
-    ],
-  },
-];
-
+    {
+      label: "Attending",
+      options: [
+        "Venue: Main Auditorium, Aliko Dangote University, Wudil",
+        "Reception Venue: Faculty of Computing Complex",
+        "Registration",
+        "Virtual Attendance",
+        "Presenting at the Conference",
+        "Food & Refreshments",
+        "Campus Tour & Fun Activities",
+        "Hotels and Accommodation",
+        "Getting Around Wudil",
+        "Visa and Travel Information",
+        "Travel Support",
+        "Code of Conduct",
+        "Equity, Diversity, and Inclusion",
+        "FAQ",
+      ],
+    },
+    {
+      label: "Sponsors",
+      options: [
+        "Conference Sponsors",
+        "Aliko Dangote University",
+        "Faculty of Computing and Mathematical Sciences",
+        "Corporate Partners",
+        "Industry Collaborators",
+        "Becoming a Sponsor",
+      ],
+    },
+    {
+      label: "Program",
+      options: [
+        "Conference Program",
+        "My Schedule",
+        "Proceedings",
+        "Program Overview",
+        "Keynotes",
+        "Panels",
+        "Tutorials",
+        "Technical Sessions",
+        "Workshops",
+        "Poster Sessions",
+        "Networking Events",
+        "Student Innovation Challenge",
+        "Recreational Activities",
+        "Filter by Day",
+      ],
+    },
+    {
+      label: "Tracks",
+      options: [
+        "Opening Plenary Sessions",
+        "Keynote Addresses",
+        "Research Paper Presentations",
+        "Postgraduate Symposium",
+        "Student Research Track",
+        "Workshops on Emerging Technologies",
+        "Panel Discussions",
+        "Poster Sessions",
+        "Mathematical Modelling and Applied Sciences",
+        "Artificial Intelligence and Data Science",
+        "Cybersecurity and Networks",
+        "Mathematics Education",
+        "Tutorials and Technical Sessions",
+        "Roundtable on Innovation and Entrepreneurship",
+        "Community Engagement and Outreach",
+        "Faculty–Industry Collaboration Track",
+        "Closing Ceremony & Awards",
+      ],
+    },
+    {
+      label: "Organization",
+      options: [
+        "Conference Steering Committee",
+        "Organizing Committee",
+        "Track Committees",
+        "Reviewers and Volunteers",
+        "Local Arrangements Committee",
+        "Workshops & Tutorials Committee",
+        "Student Activities Committee",
+      ],
+    },
+    {
+      label: "Past Conferences",
+      options: [
+        "Faculty Conference 2025",
+        "Faculty Conference 2024",
+        "Faculty Conference 2023",
+        "Faculty Conference 2022",
+        "Faculty Conference 2021",
+      ],
+    },
+  ];
 
   const [openMenu, setOpenMenu] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
