@@ -718,7 +718,7 @@ function PostsCard() {
 
         {/* Example Post */}
         <div className="border rounded-md overflow-hidden">
-          <img src="/s2.jpeg" alt="Conference Banner" className="w-full" />
+          <img src="/ss.jpeg" alt="Conference Banner" className="w-full" />
           <div className="p-3 text-gray-700 text-sm">
             <p className="font-medium text-gray-900">Call for Papers</p>
             <p>
