@@ -8,56 +8,56 @@ const ImageGallery = () => {
   const slides = [
     {
       id: 1,
-      image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "/s1.jpg",
       title: "Call for Papers",
       subtitle: "Submit your research papers for the 2025 Faculty Conference at Aliko Dangote University, Wudil.",
       cta: "Submit Now"
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "s2.jpeg",
       title: "Keynote Speakers",
       subtitle: "Renowned scholars in Computing and Mathematical Sciences will share their insights.",
       cta: "View Keynotes"
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "/s3.jpeg",
       title: "Workshops & Tutorials",
       subtitle: "Hands-on sessions on Artificial Intelligence, Data Science, and Cybersecurity.",
       cta: "Join a Workshop"
     },
     {
       id: 4,
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "s4.jpeg",
       title: "Networking & Collaboration",
       subtitle: "Engage with faculty, industry, and fellow researchers to build future opportunities.",
       cta: "Connect Now"
     },
     {
       id: 5,
-      image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "/s5.jpeg",
       title: "Student Research Showcase",
       subtitle: "Undergraduate and postgraduate students present innovative projects in Computing.",
       cta: "Explore Projects"
     },
     {
       id: 6,
-      image: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "/s6.jpeg",
       title: "Panel Discussions",
       subtitle: "Experts debate on the future of technology, ethics, and the role of AI in society.",
       cta: "Join the Discussion"
     },
     {
       id: 7,
-      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "/s2.jpeg",
       title: "Industry Collaboration",
       subtitle: "Partnership opportunities with leading tech companies and startups.",
       cta: "Partner With Us"
     },
     {
       id: 8,
-      image: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      image: "/s3.jpeg",
       title: "Closing Ceremony",
       subtitle: "Celebrate achievements, award winners, and key takeaways from the conference.",
       cta: "View Highlights"
@@ -112,13 +112,13 @@ const ImageGallery = () => {
       {/* Content Overlay */}
       <div className="absolute inset-0 flex items-center justify-center z-20">
         <div className="text-center text-white px-6 max-w-4xl">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          <h1 className="text-3xl md:text-5xl font-bold mb-6">
             {slides[currentSlide].title}
           </h1>
-          <p className="text-xl md:text-2xl mb-8 opacity-90">
+          <p className="text-xl md:text-1xl mb-8 opacity-90">
             {slides[currentSlide].subtitle}
           </p>
-          <button className="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl">
+          <button className="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-md hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl">
             {slides[currentSlide].cta}
           </button>
         </div>
