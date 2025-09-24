@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function ReviewerDashboard() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const [assignedPapers, setAssignedPapers] = useState([
     {
@@ -72,126 +72,228 @@ export default function ReviewerDashboard() {
     setReviewModalOpen(false);
   };
 
+  // Logout icon SVG
+  const LogoutIcon = () => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      className="h-5 w-5" 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor"
+    >
+      <path 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        strokeWidth={2} 
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+      />
+    </svg>
+  );
+
+  const getStatusColor = (status) => {
+    if (status.includes('Pending')) return 'bg-orange-100 text-orange-800 border-orange-200';
+    if (status.includes('Accept')) return 'bg-green-100 text-green-800 border-green-200';
+    if (status.includes('Reject')) return 'bg-red-100 text-red-800 border-red-200';
+    if (status.includes('Revise')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Top Bar */}
-      <div className="flex justify-between items-center bg-white p-4 shadow">
-        <h1 className="text-2xl font-bold">Reviewer Dashboard</h1>
-        <button
-          onClick={logout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
-      </div>
-
-      {/* Assigned Papers Table */}
-      <div className="p-4">
-        <table className="w-full bg-white shadow rounded-lg overflow-hidden">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="py-2 px-4 text-left">Title</th>
-              <th className="py-2 px-4 text-left">Authors</th>
-              <th className="py-2 px-4 text-left">Uploaded At</th>
-              <th className="py-2 px-4 text-left">Status</th>
-              <th className="py-2 px-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assignedPapers.length > 0 ? (
-              assignedPapers.map((paper) => (
-                <tr key={paper.id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 px-4">{paper.title}</td>
-                  <td className="py-2 px-4">{paper.authors}</td>
-                  <td className="py-2 px-4">{paper.uploadedAt}</td>
-                  <td className="py-2 px-4">{paper.status}</td>
-                  <td className="py-2 px-4">
-                    <a
-                      href={paper.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline mr-4"
-                    >
-                      Download
-                    </a>
-                    <button
-                      onClick={() => handleOpenReview(paper)}
-                      className="bg-green-500 text-white px-3 py-1 rounded-lg"
-                    >
-                      Review
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="5"
-                  className="text-center py-4 text-gray-500 italic"
-                >
-                  No papers assigned.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Review Modal */}
-      {reviewModalOpen && selectedPaper && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[600px] p-6 relative">
-            <h2 className="text-xl font-bold mb-4">
-              Review: {selectedPaper.title}
-            </h2>
-
-            <form onSubmit={handleSubmitReview}>
-              <textarea
-                name="feedback"
-                placeholder="Enter feedback"
-                value={reviewForm.feedback}
-                onChange={handleChange}
-                className="w-full mb-3 p-2 border rounded"
-                rows="4"
-                required
-              />
-
-              <input
-                type="file"
-                name="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleChange}
-                className="w-full mb-3"
-              />
-
-              <select
-                name="recommendation"
-                value={reviewForm.recommendation}
-                onChange={handleChange}
-                className="w-full mb-3 p-2 border rounded"
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Reviewer Dashboard</h1>
+              <p className="text-sm text-gray-500 mt-1">Review and evaluate assigned research papers</p>
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Welcome back,</p>
+                <p className="font-semibold text-gray-900">{user?.email}</p>
+              </div>
+              
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                title="Logout"
               >
-                <option value="Accept">Accept</option>
-                <option value="Reject">Reject</option>
-                <option value="Revise">Revise</option>
-              </select>
+                <LogoutIcon />
+                <span className="hidden sm:inline font-medium">Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Assigned Papers</h2>
+          <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+        </div>
+
+        {/* Papers Grid */}
+        <div className="grid gap-6">
+          {assignedPapers.length > 0 ? (
+            assignedPapers.map((paper) => (
+              <div key={paper.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{paper.title}</h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          <span>By {paper.authors}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                          </svg>
+                          <span>Uploaded {paper.uploadedAt}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 mb-4 leading-relaxed">{paper.abstract}</p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {paper.keywords.split(', ').map((keyword, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <span className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(paper.status)}`}>
+                      {paper.status}
+                    </span>
+                    
+                    <div className="flex gap-3">
+                      <a
+                        href={paper.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+                        </svg>
+                        Download
+                      </a>
+                      <button
+                        onClick={() => handleOpenReview(paper)}
+                        className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                        </svg>
+                        Review
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+              <div className="text-gray-400 text-6xl mb-4">📄</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Papers Assigned</h3>
+              <p className="text-gray-500">You don't have any papers to review at the moment.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Enhanced Review Modal */}
+      {reviewModalOpen && selectedPaper && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Review Paper</h2>
+                  <h3 className="text-lg text-gray-700 font-medium">{selectedPaper.title}</h3>
+                </div>
                 <button
-                  type="button"
                   onClick={() => setReviewModalOpen(false)}
-                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-                >
-                  Submit Review
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleSubmitReview} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Review Feedback *
+                  </label>
+                  <textarea
+                    name="feedback"
+                    placeholder="Provide detailed feedback on the paper's methodology, findings, and overall quality..."
+                    value={reviewForm.feedback}
+                    onChange={handleChange}
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-colors"
+                    rows="6"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Attach Review Document (Optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      name="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleChange}
+                      className="w-full p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-gray-300 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Recommendation *
+                  </label>
+                  <select
+                    name="recommendation"
+                    value={reviewForm.recommendation}
+                    onChange={handleChange}
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="Accept">✅ Accept - Ready for publication</option>
+                    <option value="Reject">❌ Reject - Does not meet standards</option>
+                    <option value="Revise">🔄 Revise - Needs improvements</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setReviewModalOpen(false)}
+                    className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                  >
+                    Submit Review
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

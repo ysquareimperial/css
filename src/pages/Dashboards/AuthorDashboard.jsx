@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+
 export default function AuthorDashboard() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
-  // Temporary dummy submissions
+  
   // Temporary dummy submissions
   const [submissions, setSubmissions] = useState([
     {
@@ -19,7 +20,7 @@ export default function AuthorDashboard() {
       status: "Pending Review",
       version: 1,
       uploadedAt: "2025-08-21",
-      fileUrl: "/Hello.pdf", // keep a sample file in public folder
+      fileUrl: "/Hello.pdf",
     },
     {
       id: 2,
@@ -68,13 +69,13 @@ export default function AuthorDashboard() {
       id: submissions.length + 1,
       title: form.title || "Untitled Paper",
       abstract: form.abstract,
-      authors: "You", // later connect to logged-in user
+      authors: "You",
       keywords: form.keywords,
       date: new Date().toISOString().split("T")[0],
       status: "Pending Review",
       version: 1,
       uploadedAt: new Date().toISOString().split("T")[0],
-      fileUrl: "/Hello.pdf", // replace with uploaded file URL later
+      fileUrl: "/Hello.pdf",
     };
 
     setSubmissions([newSubmission, ...submissions]);
@@ -87,210 +88,352 @@ export default function AuthorDashboard() {
     setViewModalOpen(true);
   };
 
+  // Logout icon SVG
+  const LogoutIcon = () => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      className="h-5 w-5" 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor"
+    >
+      <path 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        strokeWidth={2} 
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+      />
+    </svg>
+  );
+
+  const getStatusColor = (status) => {
+    if (status.includes('Pending')) return 'bg-orange-100 text-orange-800 border-orange-200';
+    if (status.includes('Accepted')) return 'bg-green-100 text-green-800 border-green-200';
+    if (status.includes('Rejected')) return 'bg-red-100 text-red-800 border-red-200';
+    if (status.includes('Under Review')) return 'bg-blue-100 text-blue-800 border-blue-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Top Bar */}
-      <div className="flex justify-between items-center bg-white p-4 shadow">
-        <h1 className="text-2xl font-bold">Author Dashboard</h1>
-        <button
-          onClick={logout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Author Dashboard</h1>
+              <p className="text-sm text-gray-500 mt-1">Manage and track your paper submissions</p>
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Welcome back,</p>
+                <p className="font-semibold text-gray-900">{user?.email}</p>
+              </div>
+              
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                title="Logout"
+              >
+                <LogoutIcon />
+                <span className="hidden sm:inline font-medium">Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Upload Button */}
-      <div className="p-4">
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Upload New Version
-        </button>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Action Bar */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">My Submissions</h2>
+            <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
+          </div>
+          
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+            </svg>
+            <span className="font-medium">Submit New Paper</span>
+          </button>
+        </div>
+
+        {/* Submissions Grid */}
+        <div className="grid gap-6">
+          {submissions.length > 0 ? (
+            submissions.map((paper) => (
+              <div key={paper.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">{paper.title}</h3>
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                          v{paper.version}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          <span>By {paper.authors}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                          </svg>
+                          <span>Submitted {paper.uploadedAt}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 mb-4 leading-relaxed">{paper.abstract}</p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {paper.keywords.split(', ').map((keyword, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <span className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(paper.status)}`}>
+                      {paper.status}
+                    </span>
+                    
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleView(paper)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 border border-blue-200"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                        </svg>
+                        View Details
+                      </button>
+                      
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors duration-200 border border-emerald-200"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+                          <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd"/>
+                        </svg>
+                        New Version
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+              <div className="text-gray-400 text-6xl mb-4">📝</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Submissions Yet</h3>
+              <p className="text-gray-500 mb-6">Start by submitting your first research paper.</p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Submit Your First Paper
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Submissions Table */}
-      <div className="p-4">
-        <table className="w-full bg-white shadow rounded-lg overflow-hidden">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="py-2 px-4 text-left">Title</th>
-              <th className="py-2 px-4 text-left">Status</th>
-              <th className="py-2 px-4 text-left">Version</th>
-              <th className="py-2 px-4 text-left">Uploaded At</th>
-              <th className="py-2 px-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions.length > 0 ? (
-              submissions.map((paper) => (
-                <tr key={paper.id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 px-4">{paper.title}</td>
-                  <td
-                    className={`py-2 px-4 font-semibold ${
-                      paper.status === "Accepted"
-                        ? "text-green-600"
-                        : paper.status === "Rejected"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
-                    {paper.status}
-                  </td>
-                  <td className="py-2 px-4">v{paper.version}</td>
-                  <td className="py-2 px-4">{paper.uploadedAt}</td>
-                  <td className="py-2 px-4">
-                    <button
-                      onClick={() => handleView(paper)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded-lg mr-2"
-                    >
-                      View
-                    </button>
-
-                    <button
-                      onClick={() => setShowModal(true)}
-                      className="text-green-500 hover:underline"
-                    >
-                      Upload New Version
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="5"
-                  className="text-center py-4 text-gray-500 italic"
-                >
-                  No submissions yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Upload Modal */}
+      {/* Enhanced Upload Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[500px] p-6">
-            <h2 className="text-xl font-bold mb-4">Upload New Paper</h2>
-
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="title"
-                placeholder="Paper Title"
-                value={form.title}
-                onChange={handleChange}
-                className="w-full mb-3 p-2 border rounded"
-                required
-              />
-
-              <textarea
-                name="abstract"
-                placeholder="Abstract"
-                value={form.abstract}
-                onChange={handleChange}
-                className="w-full mb-3 p-2 border rounded"
-                rows="3"
-              />
-
-              <input
-                type="text"
-                name="keywords"
-                placeholder="Keywords (comma separated)"
-                value={form.keywords}
-                onChange={handleChange}
-                className="w-full mb-3 p-2 border rounded"
-              />
-
-              <input
-                type="file"
-                name="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleChange}
-                className="w-full mb-3"
-                required
-              />
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">Submit New Paper</h2>
+                  <p className="text-gray-600">Upload your research paper for review</p>
+                </div>
                 <button
-                  type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-                >
-                  Submit
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Paper Title *
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Enter your paper title"
+                    value={form.title}
+                    onChange={handleChange}
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Abstract
+                  </label>
+                  <textarea
+                    name="abstract"
+                    placeholder="Provide a brief summary of your research..."
+                    value={form.abstract}
+                    onChange={handleChange}
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none transition-colors"
+                    rows="4"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Keywords
+                  </label>
+                  <input
+                    type="text"
+                    name="keywords"
+                    placeholder="Machine Learning, AI, Deep Learning, etc."
+                    value={form.keywords}
+                    onChange={handleChange}
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate keywords with commas</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Document *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      name="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleChange}
+                      className="w-full p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-gray-300 focus:border-purple-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX</p>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                  >
+                    Submit Paper
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
-      {/* View Modal */}
+      {/* Enhanced View Modal */}
       {viewModalOpen && selectedSubmission && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg w-full h-full p-6 relative overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">Submission Details</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedSubmission.title}</h2>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span>Version {selectedSubmission.version}</span>
+                    <span>•</span>
+                    <span>Submitted {selectedSubmission.date}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedSubmission.status)}`}>
+                      {selectedSubmission.status}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setViewModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
 
-            <p>
-              <span className="font-bold">Title:</span>{" "}
-              {selectedSubmission.title}
-            </p>
-            <p>
-              <span className="font-bold">Abstract:</span>{" "}
-              {selectedSubmission.abstract}
-            </p>
-            <p>
-              <span className="font-bold">Authors:</span>{" "}
-              {selectedSubmission.authors}
-            </p>
-            <p>
-              <span className="font-bold">Keywords:</span>{" "}
-              {selectedSubmission.keywords}
-            </p>
-            <p>
-              <span className="font-bold">Date Submitted:</span>{" "}
-              {selectedSubmission.date}
-            </p>
-            <p>
-              <span className="font-bold">Status:</span>{" "}
-              {selectedSubmission.status}
-            </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Paper Details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Authors</label>
+                        <p className="text-gray-900 mt-1">{selectedSubmission.authors}</p>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Abstract</label>
+                        <p className="text-gray-900 mt-1 leading-relaxed">{selectedSubmission.abstract}</p>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Keywords</label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedSubmission.keywords.split(', ').map((keyword, idx) => (
+                            <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            {/* PDF Preview */}
-            <div className="mt-4">
-              <span className="font-bold">Attached Document:</span>
-              <iframe
-                src={selectedSubmission.fileUrl}
-                title="Submission File"
-                className="w-full h-300 border mt-2"
-              ></iframe>
-              <a
-                href={selectedSubmission.fileUrl}
-                download
-                className="block mt-2 text-blue-600 underline"
-              >
-                Download Document
-              </a>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Document Preview</h3>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <iframe
+                      src={selectedSubmission.fileUrl}
+                      title="Document Preview"
+                      className="w-full h-96 rounded-lg border border-gray-200"
+                    />
+                    <div className="flex justify-center mt-4">
+                      <a
+                        href={selectedSubmission.fileUrl}
+                        download
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+                        </svg>
+                        Download Document
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* Close Button */}
-            <button
-              onClick={() => setViewModalOpen(false)}
-              className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-lg"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}

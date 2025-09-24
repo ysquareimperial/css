@@ -2,24 +2,60 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+// Spinner component
+const Spinner = () => (
+  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]">
+    <span className="sr-only">Loading...</span>
+  </div>
+);
+
 const Login = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
-    // fake authentication mapping
-    if (email === "admin@test.com" && password === "admin123") {
-      login("admin"); // will set user.role = "admin" and redirect
-    } else if (email === "reviewer@test.com" && password === "reviewer123") {
-      login("reviewer");
-    } else if (email === "author@test.com" && password === "author123") {
-      login("author");
-    } else {
-      setError("Invalid credentials");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      // Create form data as required by the API
+      const formData = new FormData();
+      formData.append("grant_type", "password");
+      formData.append("username", email); // API uses 'username' for email
+      formData.append("password", password);
+
+      const response = await fetch(
+        "https://yaji.onrender.com/api/users/login_user",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Login successful - pass the full user data to login function
+        login({
+          email: data.email,
+          role: data.role,
+          access_token: data.access_token,
+          token_type: data.token_type,
+        });
+      } else {
+        // Handle login error
+        setError(data.detail || "Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,27 +70,50 @@ const Login = () => {
         className="bg-white p-6 rounded-xl shadow-md w-96"
       >
         <h2 className="text-xl font-semibold mb-6 text-gray-600">Login</h2>
+
         <input
           type="email"
           placeholder="Email"
-          className="w-full border p-2 rounded mb-3"
+          className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={loading}
         />
+
         <input
           type="password"
           placeholder="Password"
-          className="w-full border p-2 rounded mb-3"
+          className="w-full border p-2 rounded mb-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={loading}
         />
-        {error && <p className="text-red-500 mb-3">{error}</p>}
-        <button className="w-full bg-blue-500 text-white p-2 rounded">
-          Login
+
+        {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+        >
+          {loading && <Spinner />}
+          {loading ? "Logging in..." : "Login"}
         </button>
-        <p className="mt-5">
+
+        <p className="mt-5 text-center">
           Don't have an account?{" "}
-          <span onClick={() => navigate("/register")}>Register here</span>
+          <span
+            className={`text-blue-500 cursor-pointer transition-colors ${
+              loading
+                ? "pointer-events-none opacity-50"
+                : "hover:underline hover:text-blue-600"
+            }`}
+            onClick={() => !loading && navigate("/register")}
+          >
+            Register here
+          </span>
         </p>
       </form>
     </div>
