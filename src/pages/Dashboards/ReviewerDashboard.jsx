@@ -81,46 +81,43 @@ export default function ReviewerDashboard() {
   };
 
   const handleSubmitReview = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!selectedPaper) return;
+    if (!selectedPaper) return;
 
-  try {
-    // Convert recommendation value to lowercase since API expects
-    // pending | accept | reject | revise
-    const status = reviewForm.recommendation.toLowerCase();
+    try {
+      // Convert recommendation value to lowercase since API expects
+      // pending | accept | reject | revise
+      const status = reviewForm.recommendation.toLowerCase();
 
-    const response = await fetch(
-      `https://yaji.onrender.com/api/reviewers/papers/${selectedPaper.id}/status?status=${status}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${user?.access_token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.ok) {
-      // ✅ Update UI after successful patch
-      setAssignedPapers((prev) =>
-        prev.map((p) =>
-          p.id === selectedPaper.id ? { ...p, status } : p
-        )
+      const response = await fetch(
+        `https://yaji.onrender.com/api/reviewers/papers/${selectedPaper.id}/status?status=${status}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${user?.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      alert(`Status updated to: ${status}`);
-      setReviewModalOpen(false);
-    } else {
-      console.error("Failed to update status");
-      alert("Failed to update status");
-    }
-  } catch (error) {
-    console.error("Error updating status:", error);
-    alert("Something went wrong!");
-  }
-};
+      if (response.ok) {
+        // ✅ Update UI after successful patch
+        setAssignedPapers((prev) =>
+          prev.map((p) => (p.id === selectedPaper.id ? { ...p, status } : p))
+        );
 
+        alert(`Status updated to: ${status}`);
+        setReviewModalOpen(false);
+      } else {
+        console.error("Failed to update status");
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Something went wrong!");
+    }
+  };
 
   // Logout icon SVG
   const LogoutIcon = () => (
@@ -141,7 +138,7 @@ export default function ReviewerDashboard() {
   );
 
   const getStatusColor = (status) => {
-    if (status.includes("Pending"))
+    if (status.includes("pending"))
       return "bg-orange-100 text-orange-800 border-orange-200";
     if (status.includes("Accept"))
       return "bg-green-100 text-green-800 border-green-200";
@@ -150,6 +147,22 @@ export default function ReviewerDashboard() {
     if (status.includes("Revise"))
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     return "bg-gray-100 text-gray-800 border-gray-200";
+  };
+
+  const getStatusLabel = (status) => {
+    if (!status) return "";
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "Pending";
+      case "accept":
+        return "Accepted";
+      case "reject":
+        return "Rejected";
+      case "revise":
+        return "Revised";
+      default:
+        return status;
+    }
   };
 
   return (
@@ -257,7 +270,7 @@ export default function ReviewerDashboard() {
                         paper?.status
                       )}`}
                     >
-                      {paper?.status}
+                      {getStatusLabel(paper?.status)}
                     </span>
 
                     <div className="flex gap-3">

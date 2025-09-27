@@ -27,7 +27,7 @@ export default function AuthorDashboard() {
 
       if (response.ok) {
         console.log(response);
-        
+
         const papers = await response.json();
 
         // Transform API response to match your component structure
@@ -228,13 +228,29 @@ export default function AuthorDashboard() {
   const getStatusColor = (status) => {
     if (status.includes("Pending"))
       return "bg-orange-100 text-orange-800 border-orange-200";
-    if (status.includes("Accepted"))
+    if (status.includes("Accept"))
       return "bg-green-100 text-green-800 border-green-200";
-    if (status.includes("Rejected"))
+    if (status.includes("Reject"))
       return "bg-red-100 text-red-800 border-red-200";
-    if (status.includes("Under Review"))
+    if (status.includes("Revise"))
       return "bg-blue-100 text-blue-800 border-blue-200";
     return "bg-gray-100 text-gray-800 border-gray-200";
+  };
+
+  const getStatusLabel = (status) => {
+    if (!status) return "";
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "Pending";
+      case "accept":
+        return "Accepted";
+      case "reject":
+        return "Rejected";
+      case "revise":
+        return "Revised";
+      default:
+        return status;
+    }
   };
 
   return (
@@ -376,12 +392,20 @@ export default function AuthorDashboard() {
                   </div>
 
                   <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                    <span
+                    {/* <span
                       className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
                         paper.status
                       )}`}
                     >
                       {paper.status}
+                    </span> */}
+
+                    <span
+                      className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
+                        paper?.status
+                      )}`}
+                    >
+                      {getStatusLabel(paper?.status)}
                     </span>
 
                     <div className="flex gap-3">
