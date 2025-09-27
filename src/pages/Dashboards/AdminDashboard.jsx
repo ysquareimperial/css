@@ -81,99 +81,7 @@ export default function AdminDashboard() {
 
   // Mock data for all submitted papers
   const [reviewers, setReviewers] = useState([]);
-  const [allPapers, setAllPapers] = useState([
-    //   {
-    //     id: 1,
-    //     title: "AI in Education: Transforming Learning Experiences",
-    //     abstract:
-    //       "This paper explores how artificial intelligence is revolutionizing education systems worldwide through personalized learning and adaptive assessment.",
-    //     authors: "John Doe, Jane Smith",
-    //     keywords: "AI, Education, Machine Learning, Personalized Learning",
-    //     submittedAt: "2025-08-21",
-    //     status: "Pending Assignment",
-    //     assignedReviewer: null,
-    //     version: 1,
-    //     fileUrl: "/Hello.pdf",
-    //   },
-    //   {
-    //     id: 2,
-    //     title: "Blockchain Technology in Healthcare Systems",
-    //     abstract:
-    //       "This research studies the implementation of blockchain technology for secure patient data management and healthcare interoperability.",
-    //     authors: "Alice Johnson",
-    //     keywords: "Blockchain, Healthcare, Security, Privacy",
-    //     submittedAt: "2025-08-15",
-    //     status: "Under Review",
-    //     assignedReviewer: "Dr. Sarah Wilson",
-    //     version: 2,
-    //     fileUrl: "/Hello.pdf",
-    //   },
-    //   {
-    //     id: 3,
-    //     title: "Quantum Computing Applications in Cryptography",
-    //     abstract:
-    //       "An analysis of quantum computing's impact on current cryptographic methods and future security protocols.",
-    //     authors: "Bob Martinez, Carol Lee",
-    //     keywords: "Quantum Computing, Cryptography, Security, Algorithms",
-    //     submittedAt: "2025-08-10",
-    //     status: "Review Completed",
-    //     assignedReviewer: "Prof. Michael Chen",
-    //     version: 1,
-    //     fileUrl: "/Hello.pdf",
-    //   },
-    //   {
-    //     id: 4,
-    //     title: "Machine Learning for Climate Change Prediction",
-    //     abstract:
-    //       "Investigating the use of advanced machine learning models for accurate climate change forecasting and environmental impact assessment.",
-    //     authors: "Emma Davis",
-    //     keywords:
-    //       "Machine Learning, Climate Change, Environmental Science, Prediction Models",
-    //     submittedAt: "2025-08-05",
-    //     status: "Accepted",
-    //     assignedReviewer: "Dr. James Rodriguez",
-    //     version: 3,
-    //     fileUrl: "/Hello.pdf",
-    //   },
-    // ]);
-    // // Mock reviewers data
-    // const [reviewers] = useState([
-    //   {
-    //     id: 1,
-    //     name: "Dr. Sarah Wilson",
-    //     email: "sarah.wilson@university.edu",
-    //     expertise: "AI, Machine Learning",
-    //     workload: 3,
-    //   },
-    //   {
-    //     id: 2,
-    //     name: "Prof. Michael Chen",
-    //     email: "m.chen@university.edu",
-    //     expertise: "Cryptography, Security",
-    //     workload: 2,
-    //   },
-    //   {
-    //     id: 3,
-    //     name: "Dr. James Rodriguez",
-    //     email: "j.rodriguez@university.edu",
-    //     expertise: "Environmental Science, Data Science",
-    //     workload: 4,
-    //   },
-    //   {
-    //     id: 4,
-    //     name: "Dr. Lisa Thompson",
-    //     email: "l.thompson@university.edu",
-    //     expertise: "Blockchain, Healthcare IT",
-    //     workload: 1,
-    //   },
-    //   {
-    //     id: 5,
-    //     name: "Prof. David Kumar",
-    //     email: "d.kumar@university.edu",
-    //     expertise: "Quantum Computing, Algorithms",
-    //     workload: 2,
-    //   },
-  ]);
+  const [allPapers, setAllPapers] = useState([]);
 
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedPaper, setSelectedPaper] = useState(null);
@@ -186,32 +94,6 @@ export default function AdminDashboard() {
     setAssignModalOpen(true);
   };
 
-  // const handleAssignSubmit = () => {
-  //   if (!selectedReviewer) {
-  //     alert("Please select a reviewer");
-  //     return;
-  //   }
-
-  //   const reviewerName = reviewers.find(
-  //     (r) => r.name === selectedReviewer
-  //   )?.name;
-
-  //   setAllPapers((prev) =>
-  //     prev.map((paper) =>
-  //       paper.id === selectedPaper.id
-  //         ? {
-  //             ...paper,
-  //             assignedReviewer: reviewerName,
-  //             status: "Under Review",
-  //           }
-  //         : paper
-  //     )
-  //   );
-
-  //   setAssignModalOpen(false);
-  //   setSelectedPaper(null);
-  //   setSelectedReviewer("");
-  // };
   const handleAssignSubmit = async () => {
     if (!selectedReviewer) {
       alert("Please select a reviewer");
@@ -428,10 +310,7 @@ export default function AdminDashboard() {
                   Pending Assignment
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {
-                    allPapers.filter((p) => p.status === "pending")
-                      .length
-                  }
+                  {allPapers.filter((p) => p.status === "pending").length}
                 </p>
               </div>
             </div>
@@ -484,8 +363,7 @@ export default function AdminDashboard() {
                   {
                     allPapers.filter(
                       (p) =>
-                        p.status === "accept" ||
-                        p.status === "Review Completed"
+                        p.status === "accept" || p.status === "Review Completed"
                     ).length
                   }
                 </p>
@@ -596,7 +474,7 @@ export default function AdminDashboard() {
                   </span>
                   <div className="flex gap-3">
                     <a
-                      href={paper.fileUrl}
+                      href={"/Hello.pdf"}
                       target="_blank"
                       rel="noreferrer"
                       className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
