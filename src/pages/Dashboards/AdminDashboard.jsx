@@ -217,6 +217,7 @@ export default function AdminDashboard() {
       alert("Please select a reviewer");
       return;
     }
+    setLoading(true); // ✅ start loading
 
     try {
       // find the reviewer object by email (not name, since you're setting email in state)
@@ -266,6 +267,8 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error assigning reviewer:", error);
       alert("Something went wrong assigning reviewer");
+    } finally {
+      setLoading(false); // ✅ stop loading always
     }
   };
 
@@ -426,7 +429,7 @@ export default function AdminDashboard() {
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {
-                    allPapers.filter((p) => p.status === "Pending Assignment")
+                    allPapers.filter((p) => p.status === "pending")
                       .length
                   }
                 </p>
@@ -454,7 +457,7 @@ export default function AdminDashboard() {
                   Under Review
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {allPapers.filter((p) => p.status === "Under Review").length}
+                  {allPapers.filter((p) => p.status === "pending").length}
                 </p>
               </div>
             </div>
@@ -481,7 +484,7 @@ export default function AdminDashboard() {
                   {
                     allPapers.filter(
                       (p) =>
-                        p.status === "Accepted" ||
+                        p.status === "accept" ||
                         p.status === "Review Completed"
                     ).length
                   }
@@ -764,10 +767,44 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={handleAssignSubmit}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                  disabled={loading}
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white 
+             hover:from-indigo-600 hover:to-indigo-700 
+             disabled:opacity-50 disabled:cursor-not-allowed
+             transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                 >
-                  {selectedPaper.assignedReviewer ? "Reassign" : "Assign"}{" "}
-                  Reviewer
+                  {loading ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white inline"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      {selectedPaper.assignedReviewer
+                        ? "Reassigning..."
+                        : "Assigning..."}
+                    </>
+                  ) : (
+                    <>
+                      {selectedPaper.assignedReviewer ? "Reassign" : "Assign"}{" "}
+                      Reviewer
+                    </>
+                  )}
                 </button>
               </div>
             </div>
