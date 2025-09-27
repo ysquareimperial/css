@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function AuthorDashboard() {
@@ -6,35 +6,88 @@ export default function AuthorDashboard() {
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
-  
+
+  // Add loading state
+  const [loading, setLoading] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
+
+  // Fetch papers function
+  const fetchMyPapers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://yaji.onrender.com/api/authors/papers",
+        {
+          headers: {
+            Authorization: `Bearer ${user?.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        console.log(response);
+        
+        const papers = await response.json();
+
+        // Transform API response to match your component structure
+        const transformedPapers = papers.map((paper) => ({
+          id: paper.id,
+          title: paper.title,
+          abstract: paper.abstract,
+          keywords: paper.keywords,
+          authors: user?.email || "You",
+          date: new Date(paper.uploaded_at).toISOString().split("T")[0],
+          status: paper.status.charAt(0).toUpperCase() + paper.status.slice(1), // Capitalize status
+          version: paper.version,
+          uploadedAt: new Date(paper.uploaded_at).toISOString().split("T")[0],
+          fileUrl: "/Hello.pdf", // Update based on your API
+        }));
+
+        setSubmissions(transformedPapers);
+      } else {
+        console.error("Failed to fetch papers");
+      }
+    } catch (error) {
+      console.error("Error fetching papers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch papers on component mount
+  useEffect(() => {
+    fetchMyPapers();
+  }, []);
+
   // Temporary dummy submissions
-  const [submissions, setSubmissions] = useState([
-    {
-      id: 1,
-      title: "AI in Education",
-      abstract:
-        "This paper explores how AI is shaping education systems worldwide.",
-      authors: "John Doe, Jane Smith",
-      keywords: "AI, Education, Machine Learning",
-      date: "2025-08-21",
-      status: "Pending Review",
-      version: 1,
-      uploadedAt: "2025-08-21",
-      fileUrl: "/Hello.pdf",
-    },
-    {
-      id: 2,
-      title: "Blockchain for Healthcare",
-      abstract: "This research studies blockchain use cases in healthcare.",
-      authors: "Alice Johnson",
-      keywords: "Blockchain, Healthcare, Security",
-      date: "2025-08-15",
-      status: "Accepted",
-      version: 2,
-      uploadedAt: "2025-08-15",
-      fileUrl: "/Hello.pdf",
-    },
-  ]);
+  // const [submissions, setSubmissions] = useState([
+  //   {
+  //     id: 1,
+  //     title: "AI in Education",
+  //     abstract:
+  //       "This paper explores how AI is shaping education systems worldwide.",
+  //     authors: "John Doe, Jane Smith",
+  //     keywords: "AI, Education, Machine Learning",
+  //     date: "2025-08-21",
+  //     status: "Pending Review",
+  //     version: 1,
+  //     uploadedAt: "2025-08-21",
+  //     fileUrl: "/Hello.pdf",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Blockchain for Healthcare",
+  //     abstract: "This research studies blockchain use cases in healthcare.",
+  //     authors: "Alice Johnson",
+  //     keywords: "Blockchain, Healthcare, Security",
+  //     date: "2025-08-15",
+  //     status: "Accepted",
+  //     version: 2,
+  //     uploadedAt: "2025-08-15",
+  //     fileUrl: "/Hello.pdf",
+  //   },
+  // ]);
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
@@ -53,7 +106,37 @@ export default function AuthorDashboard() {
     });
   };
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   if (!form.file) {
+  //     alert("Please select a file");
+  //     return;
+  //   }
+
+  //   // TODO: Replace with API call
+  //   console.log("Uploading submission:", form);
+
+  //   // Simulate adding new submission
+  //   const newSubmission = {
+  //     id: submissions.length + 1,
+  //     title: form.title || "Untitled Paper",
+  //     abstract: form.abstract,
+  //     authors: "You",
+  //     keywords: form.keywords,
+  //     date: new Date().toISOString().split("T")[0],
+  //     status: "Pending Review",
+  //     version: 1,
+  //     uploadedAt: new Date().toISOString().split("T")[0],
+  //     fileUrl: "/Hello.pdf",
+  //   };
+
+  //   setSubmissions([newSubmission, ...submissions]);
+  //   setForm({ title: "", abstract: "", keywords: "", file: null });
+  //   setShowModal(false);
+  // };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.file) {
@@ -61,26 +144,62 @@ export default function AuthorDashboard() {
       return;
     }
 
-    // TODO: Replace with API call
-    console.log("Uploading submission:", form);
+    setLoading(true); // You'll need to add loading state
 
-    // Simulate adding new submission
-    const newSubmission = {
-      id: submissions.length + 1,
-      title: form.title || "Untitled Paper",
-      abstract: form.abstract,
-      authors: "You",
-      keywords: form.keywords,
-      date: new Date().toISOString().split("T")[0],
-      status: "Pending Review",
-      version: 1,
-      uploadedAt: new Date().toISOString().split("T")[0],
-      fileUrl: "/Hello.pdf",
-    };
+    try {
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append("file", form.file);
 
-    setSubmissions([newSubmission, ...submissions]);
-    setForm({ title: "", abstract: "", keywords: "", file: null });
-    setShowModal(false);
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        title: form.title,
+        abstract: form.abstract,
+        keywords: form.keywords,
+      });
+
+      const response = await fetch(
+        `https://yaji.onrender.com/api/authors/papers?${queryParams}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user?.access_token}`, // Use your auth token
+          },
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Add new submission to state
+        const newSubmission = {
+          id: data.id,
+          title: form.title,
+          abstract: form.abstract,
+          keywords: form.keywords,
+          authors: user?.email || "You",
+          date: new Date(data.uploaded_at).toISOString().split("T")[0],
+          status: data.status,
+          version: data.version,
+          uploadedAt: new Date(data.uploaded_at).toISOString().split("T")[0],
+          fileUrl: "/Hello.pdf", // Update this based on your API response
+        };
+
+        setSubmissions([newSubmission, ...submissions]);
+        setForm({ title: "", abstract: "", keywords: "", file: null });
+        setShowModal(false);
+        alert("Paper submitted successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(errorData.detail || "Failed to submit paper");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Something went wrong during upload");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleView = (submission) => {
@@ -90,28 +209,32 @@ export default function AuthorDashboard() {
 
   // Logout icon SVG
   const LogoutIcon = () => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      className="h-5 w-5" 
-      fill="none" 
-      viewBox="0 0 24 24" 
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
       stroke="currentColor"
     >
-      <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth={2} 
-        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
       />
     </svg>
   );
 
   const getStatusColor = (status) => {
-    if (status.includes('Pending')) return 'bg-orange-100 text-orange-800 border-orange-200';
-    if (status.includes('Accepted')) return 'bg-green-100 text-green-800 border-green-200';
-    if (status.includes('Rejected')) return 'bg-red-100 text-red-800 border-red-200';
-    if (status.includes('Under Review')) return 'bg-blue-100 text-blue-800 border-blue-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (status.includes("Pending"))
+      return "bg-orange-100 text-orange-800 border-orange-200";
+    if (status.includes("Accepted"))
+      return "bg-green-100 text-green-800 border-green-200";
+    if (status.includes("Rejected"))
+      return "bg-red-100 text-red-800 border-red-200";
+    if (status.includes("Under Review"))
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   return (
@@ -121,16 +244,20 @@ export default function AuthorDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Author Dashboard</h1>
-              <p className="text-sm text-gray-500 mt-1">Manage and track your paper submissions</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Author Dashboard
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Manage and track your paper submissions
+              </p>
             </div>
-            
+
             <div className="flex items-center gap-6">
               <div className="text-right">
                 <p className="text-sm text-gray-500">Welcome back,</p>
                 <p className="font-semibold text-gray-900">{user?.email}</p>
               </div>
-              
+
               <button
                 onClick={logout}
                 className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -149,16 +276,22 @@ export default function AuthorDashboard() {
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">My Submissions</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              My Submissions
+            </h2>
             <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
           </div>
-          
+
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
             </svg>
             <span className="font-medium">Submit New Paper</span>
           </button>
@@ -166,67 +299,126 @@ export default function AuthorDashboard() {
 
         {/* Submissions Grid */}
         <div className="grid gap-6">
-          {submissions.length > 0 ? (
+          {/* {submissions.length > 0 ? (
             submissions.map((paper) => (
-              <div key={paper.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+              <div
+                key={paper.id}
+                className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{paper.title}</h3>
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {paper.title}
+                        </h3>
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                          v{paper.version}
+                        </span>
+                      </div> */}
+          {submissions.length > 0 ? (
+            submissions.map((paper) => (
+              <div
+                key={paper.id}
+                className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {paper.title}
+                        </h3>
                         <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                           v{paper.version}
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <span>By {paper.authors}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           <span>Submitted {paper.uploadedAt}</span>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 leading-relaxed">{paper.abstract}</p>
+                      <p className="text-gray-700 mb-4 leading-relaxed">
+                        {paper.abstract}
+                      </p>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {paper.keywords.split(', ').map((keyword, idx) => (
-                          <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                        {paper.keywords.split(", ").map((keyword, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200"
+                          >
                             {keyword}
                           </span>
                         ))}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                    <span className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(paper.status)}`}>
+                    <span
+                      className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
+                        paper.status
+                      )}`}
+                    >
                       {paper.status}
                     </span>
-                    
+
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleView(paper)}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 border border-blue-200"
                       >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path
+                            fillRule="evenodd"
+                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         View Details
                       </button>
-                      
+
                       <button
                         onClick={() => setShowModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors duration-200 border border-emerald-200"
                       >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
-                          <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd"/>
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
+                          <path
+                            fillRule="evenodd"
+                            d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         New Version
                       </button>
@@ -238,8 +430,12 @@ export default function AuthorDashboard() {
           ) : (
             <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
               <div className="text-gray-400 text-6xl mb-4">📝</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Submissions Yet</h3>
-              <p className="text-gray-500 mb-6">Start by submitting your first research paper.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No Submissions Yet
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Start by submitting your first research paper.
+              </p>
               <button
                 onClick={() => setShowModal(true)}
                 className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -258,15 +454,29 @@ export default function AuthorDashboard() {
             <div className="p-8">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-1">Submit New Paper</h2>
-                  <p className="text-gray-600">Upload your research paper for review</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                    Submit New Paper
+                  </h2>
+                  <p className="text-gray-600">
+                    Upload your research paper for review
+                  </p>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -313,7 +523,9 @@ export default function AuthorDashboard() {
                     onChange={handleChange}
                     className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Separate keywords with commas</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Separate keywords with commas
+                  </p>
                 </div>
 
                 <div>
@@ -330,7 +542,9 @@ export default function AuthorDashboard() {
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: PDF, DOC, DOCX
+                  </p>
                 </div>
 
                 <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
@@ -341,11 +555,44 @@ export default function AuthorDashboard() {
                   >
                     Cancel
                   </button>
-                  <button
+                  {/* <button
                     type="submit"
                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                   >
                     Submit Paper
+                  </button> */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                  >
+                    {loading ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-4 w-4 text-white inline"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Paper"
+                    )}
                   </button>
                 </div>
               </form>
@@ -361,12 +608,18 @@ export default function AuthorDashboard() {
             <div className="p-8">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedSubmission.title}</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {selectedSubmission.title}
+                  </h2>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span>Version {selectedSubmission.version}</span>
                     <span>•</span>
                     <span>Submitted {selectedSubmission.date}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedSubmission.status)}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        selectedSubmission.status
+                      )}`}
+                    >
                       {selectedSubmission.status}
                     </span>
                   </div>
@@ -375,8 +628,18 @@ export default function AuthorDashboard() {
                   onClick={() => setViewModalOpen(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -384,26 +647,43 @@ export default function AuthorDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Paper Details</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                      Paper Details
+                    </h3>
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-700">Authors</label>
-                        <p className="text-gray-900 mt-1">{selectedSubmission.authors}</p>
+                        <label className="text-sm font-medium text-gray-700">
+                          Authors
+                        </label>
+                        <p className="text-gray-900 mt-1">
+                          {selectedSubmission.authors}
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <label className="text-sm font-medium text-gray-700">Abstract</label>
-                        <p className="text-gray-900 mt-1 leading-relaxed">{selectedSubmission.abstract}</p>
+                        <label className="text-sm font-medium text-gray-700">
+                          Abstract
+                        </label>
+                        <p className="text-gray-900 mt-1 leading-relaxed">
+                          {selectedSubmission.abstract}
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Keywords</label>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          Keywords
+                        </label>
                         <div className="flex flex-wrap gap-2">
-                          {selectedSubmission.keywords.split(', ').map((keyword, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
-                              {keyword}
-                            </span>
-                          ))}
+                          {selectedSubmission.keywords
+                            .split(", ")
+                            .map((keyword, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200"
+                              >
+                                {keyword}
+                              </span>
+                            ))}
                         </div>
                       </div>
                     </div>
@@ -411,7 +691,9 @@ export default function AuthorDashboard() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Document Preview</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Document Preview
+                  </h3>
                   <div className="bg-gray-50 rounded-xl p-4">
                     <iframe
                       src={selectedSubmission.fileUrl}
@@ -424,8 +706,16 @@ export default function AuthorDashboard() {
                         download
                         className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
                       >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         Download Document
                       </a>

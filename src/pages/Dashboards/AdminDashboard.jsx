@@ -1,103 +1,178 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [reviewersLoading, setReviewersLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [reviewersError, setReviewersError] = useState(null);
+
+  // Fetch papers from API
+  useEffect(() => {
+    const fetchPapers = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch("https://yaji.onrender.com/api/admins/papers", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${user?.access_token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        setAllPapers(data); // Assuming API returns an array of papers
+      } catch (err) {
+        console.error("Failed to fetch papers:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.access_token) {
+      fetchPapers();
+    }
+  }, [user?.access_token]);
+
+  useEffect(() => {
+    const fetchReviewers = async () => {
+      setReviewersLoading(true);
+      setReviewersError(null);
+
+      try {
+        const res = await fetch(
+          "https://yaji.onrender.com/api/admins/reviewers",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${user?.access_token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log("Reviewers response:", data);
+        setReviewers(Array.isArray(data) ? data : data.reviewers || []);
+      } catch (err) {
+        console.error("Failed to fetch reviewers:", err);
+        setReviewersError(err.message);
+      } finally {
+        setReviewersLoading(false);
+      }
+    };
+
+    if (user?.access_token) {
+      fetchReviewers();
+    }
+  }, [user?.access_token]);
 
   // Mock data for all submitted papers
+  const [reviewers, setReviewers] = useState([]);
   const [allPapers, setAllPapers] = useState([
-    {
-      id: 1,
-      title: "AI in Education: Transforming Learning Experiences",
-      abstract:
-        "This paper explores how artificial intelligence is revolutionizing education systems worldwide through personalized learning and adaptive assessment.",
-      authors: "John Doe, Jane Smith",
-      keywords: "AI, Education, Machine Learning, Personalized Learning",
-      submittedAt: "2025-08-21",
-      status: "Pending Assignment",
-      assignedReviewer: null,
-      version: 1,
-      fileUrl: "/Hello.pdf",
-    },
-    {
-      id: 2,
-      title: "Blockchain Technology in Healthcare Systems",
-      abstract:
-        "This research studies the implementation of blockchain technology for secure patient data management and healthcare interoperability.",
-      authors: "Alice Johnson",
-      keywords: "Blockchain, Healthcare, Security, Privacy",
-      submittedAt: "2025-08-15",
-      status: "Under Review",
-      assignedReviewer: "Dr. Sarah Wilson",
-      version: 2,
-      fileUrl: "/Hello.pdf",
-    },
-    {
-      id: 3,
-      title: "Quantum Computing Applications in Cryptography",
-      abstract:
-        "An analysis of quantum computing's impact on current cryptographic methods and future security protocols.",
-      authors: "Bob Martinez, Carol Lee",
-      keywords: "Quantum Computing, Cryptography, Security, Algorithms",
-      submittedAt: "2025-08-10",
-      status: "Review Completed",
-      assignedReviewer: "Prof. Michael Chen",
-      version: 1,
-      fileUrl: "/Hello.pdf",
-    },
-    {
-      id: 4,
-      title: "Machine Learning for Climate Change Prediction",
-      abstract:
-        "Investigating the use of advanced machine learning models for accurate climate change forecasting and environmental impact assessment.",
-      authors: "Emma Davis",
-      keywords:
-        "Machine Learning, Climate Change, Environmental Science, Prediction Models",
-      submittedAt: "2025-08-05",
-      status: "Accepted",
-      assignedReviewer: "Dr. James Rodriguez",
-      version: 3,
-      fileUrl: "/Hello.pdf",
-    },
-  ]);
-
-  // Mock reviewers data
-  const [reviewers] = useState([
-    {
-      id: 1,
-      name: "Dr. Sarah Wilson",
-      email: "sarah.wilson@university.edu",
-      expertise: "AI, Machine Learning",
-      workload: 3,
-    },
-    {
-      id: 2,
-      name: "Prof. Michael Chen",
-      email: "m.chen@university.edu",
-      expertise: "Cryptography, Security",
-      workload: 2,
-    },
-    {
-      id: 3,
-      name: "Dr. James Rodriguez",
-      email: "j.rodriguez@university.edu",
-      expertise: "Environmental Science, Data Science",
-      workload: 4,
-    },
-    {
-      id: 4,
-      name: "Dr. Lisa Thompson",
-      email: "l.thompson@university.edu",
-      expertise: "Blockchain, Healthcare IT",
-      workload: 1,
-    },
-    {
-      id: 5,
-      name: "Prof. David Kumar",
-      email: "d.kumar@university.edu",
-      expertise: "Quantum Computing, Algorithms",
-      workload: 2,
-    },
+    //   {
+    //     id: 1,
+    //     title: "AI in Education: Transforming Learning Experiences",
+    //     abstract:
+    //       "This paper explores how artificial intelligence is revolutionizing education systems worldwide through personalized learning and adaptive assessment.",
+    //     authors: "John Doe, Jane Smith",
+    //     keywords: "AI, Education, Machine Learning, Personalized Learning",
+    //     submittedAt: "2025-08-21",
+    //     status: "Pending Assignment",
+    //     assignedReviewer: null,
+    //     version: 1,
+    //     fileUrl: "/Hello.pdf",
+    //   },
+    //   {
+    //     id: 2,
+    //     title: "Blockchain Technology in Healthcare Systems",
+    //     abstract:
+    //       "This research studies the implementation of blockchain technology for secure patient data management and healthcare interoperability.",
+    //     authors: "Alice Johnson",
+    //     keywords: "Blockchain, Healthcare, Security, Privacy",
+    //     submittedAt: "2025-08-15",
+    //     status: "Under Review",
+    //     assignedReviewer: "Dr. Sarah Wilson",
+    //     version: 2,
+    //     fileUrl: "/Hello.pdf",
+    //   },
+    //   {
+    //     id: 3,
+    //     title: "Quantum Computing Applications in Cryptography",
+    //     abstract:
+    //       "An analysis of quantum computing's impact on current cryptographic methods and future security protocols.",
+    //     authors: "Bob Martinez, Carol Lee",
+    //     keywords: "Quantum Computing, Cryptography, Security, Algorithms",
+    //     submittedAt: "2025-08-10",
+    //     status: "Review Completed",
+    //     assignedReviewer: "Prof. Michael Chen",
+    //     version: 1,
+    //     fileUrl: "/Hello.pdf",
+    //   },
+    //   {
+    //     id: 4,
+    //     title: "Machine Learning for Climate Change Prediction",
+    //     abstract:
+    //       "Investigating the use of advanced machine learning models for accurate climate change forecasting and environmental impact assessment.",
+    //     authors: "Emma Davis",
+    //     keywords:
+    //       "Machine Learning, Climate Change, Environmental Science, Prediction Models",
+    //     submittedAt: "2025-08-05",
+    //     status: "Accepted",
+    //     assignedReviewer: "Dr. James Rodriguez",
+    //     version: 3,
+    //     fileUrl: "/Hello.pdf",
+    //   },
+    // ]);
+    // // Mock reviewers data
+    // const [reviewers] = useState([
+    //   {
+    //     id: 1,
+    //     name: "Dr. Sarah Wilson",
+    //     email: "sarah.wilson@university.edu",
+    //     expertise: "AI, Machine Learning",
+    //     workload: 3,
+    //   },
+    //   {
+    //     id: 2,
+    //     name: "Prof. Michael Chen",
+    //     email: "m.chen@university.edu",
+    //     expertise: "Cryptography, Security",
+    //     workload: 2,
+    //   },
+    //   {
+    //     id: 3,
+    //     name: "Dr. James Rodriguez",
+    //     email: "j.rodriguez@university.edu",
+    //     expertise: "Environmental Science, Data Science",
+    //     workload: 4,
+    //   },
+    //   {
+    //     id: 4,
+    //     name: "Dr. Lisa Thompson",
+    //     email: "l.thompson@university.edu",
+    //     expertise: "Blockchain, Healthcare IT",
+    //     workload: 1,
+    //   },
+    //   {
+    //     id: 5,
+    //     name: "Prof. David Kumar",
+    //     email: "d.kumar@university.edu",
+    //     expertise: "Quantum Computing, Algorithms",
+    //     workload: 2,
+    //   },
   ]);
 
   const [assignModalOpen, setAssignModalOpen] = useState(false);
@@ -111,31 +186,87 @@ export default function AdminDashboard() {
     setAssignModalOpen(true);
   };
 
-  const handleAssignSubmit = () => {
+  // const handleAssignSubmit = () => {
+  //   if (!selectedReviewer) {
+  //     alert("Please select a reviewer");
+  //     return;
+  //   }
+
+  //   const reviewerName = reviewers.find(
+  //     (r) => r.name === selectedReviewer
+  //   )?.name;
+
+  //   setAllPapers((prev) =>
+  //     prev.map((paper) =>
+  //       paper.id === selectedPaper.id
+  //         ? {
+  //             ...paper,
+  //             assignedReviewer: reviewerName,
+  //             status: "Under Review",
+  //           }
+  //         : paper
+  //     )
+  //   );
+
+  //   setAssignModalOpen(false);
+  //   setSelectedPaper(null);
+  //   setSelectedReviewer("");
+  // };
+  const handleAssignSubmit = async () => {
     if (!selectedReviewer) {
       alert("Please select a reviewer");
       return;
     }
 
-    const reviewerName = reviewers.find(
-      (r) => r.name === selectedReviewer
-    )?.name;
+    try {
+      // find the reviewer object by email (not name, since you're setting email in state)
+      const reviewer = reviewers.find((r) => r.email === selectedReviewer);
 
-    setAllPapers((prev) =>
-      prev.map((paper) =>
-        paper.id === selectedPaper.id
-          ? {
-              ...paper,
-              assignedReviewer: reviewerName,
-              status: "Under Review",
-            }
-          : paper
-      )
-    );
+      if (!reviewer) {
+        alert("Reviewer not found");
+        return;
+      }
 
-    setAssignModalOpen(false);
-    setSelectedPaper(null);
-    setSelectedReviewer("");
+      const res = await fetch("https://yaji.onrender.com/api/admins/assign", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.access_token}`,
+        },
+        body: JSON.stringify({
+          paper_id: selectedPaper.id,
+          reviewer_id: reviewer.id,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to assign reviewer");
+      }
+
+      // optional: get updated paper from API response
+      // const updatedPaper = await res.json();
+
+      // update local state optimistically
+      setAllPapers((prev) =>
+        prev.map((paper) =>
+          paper.id === selectedPaper.id
+            ? {
+                ...paper,
+                assignedReviewer: reviewer.email, // or reviewer.name if API returns it
+                status: "Under Review",
+              }
+            : paper
+        )
+      );
+
+      // close modal and reset
+      setAssignModalOpen(false);
+      setSelectedPaper(null);
+      setSelectedReviewer("");
+    } catch (error) {
+      console.error("Error assigning reviewer:", error);
+      alert("Something went wrong assigning reviewer");
+    }
   };
 
   // Handle removal
@@ -177,7 +308,7 @@ export default function AdminDashboard() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Pending Assignment":
+      case "pending":
         return "bg-red-100 text-red-800 border-red-200";
       case "Under Review":
         return "bg-blue-100 text-blue-800 border-blue-200";
@@ -379,7 +510,7 @@ export default function AdminDashboard() {
                         >
                           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>By {paper.authors}</span>
+                        <span>By {paper.author.email}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <svg
@@ -393,7 +524,7 @@ export default function AdminDashboard() {
                             clipRule="evenodd"
                           />
                         </svg>
-                        <span>Submitted {paper.submittedAt}</span>
+                        <span>Submitted {paper.uploaded_at}</span>
                       </div>
                       {paper.assignedReviewer && (
                         <div className="flex items-center gap-1">
@@ -564,23 +695,26 @@ export default function AdminDashboard() {
                       <div
                         key={reviewer.id}
                         className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                          selectedReviewer === reviewer.name
+                          selectedReviewer === reviewer.email
                             ? "border-indigo-500 bg-indigo-50"
                             : "border-gray-200 hover:border-gray-300"
                         }`}
-                        onClick={() => setSelectedReviewer(reviewer.name)}
+                        onClick={() => setSelectedReviewer(reviewer.email)}
                       >
                         <div className="flex justify-between items-center">
                           <div>
-                            <h4 className="font-semibold text-gray-900">
+                            {/* <h4 className="font-semibold text-gray-900">
                               {reviewer.name}
-                            </h4>
-                            <p className="text-sm text-gray-600">
+                            </h4> */}
+                            <h4 className="font-semibold text-gray-900">
                               {reviewer.email}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-1">
+                            </h4>
+                            {/* <p className="text-sm text-gray-600">
+                              {reviewer.email}
+                            </p> */}
+                            {/* <p className="text-sm text-gray-500 mt-1">
                               Expertise: {reviewer.expertise}
-                            </p>
+                            </p> */}
                           </div>
                           <div className="text-right">
                             <span
@@ -588,7 +722,7 @@ export default function AdminDashboard() {
                                 reviewer.workload
                               )}`}
                             >
-                              {reviewer.workload} papers
+                              {reviewer.assigned_papers_count} papers
                             </span>
                           </div>
                         </div>
