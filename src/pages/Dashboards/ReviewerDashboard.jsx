@@ -23,22 +23,25 @@ export default function ReviewerDashboard() {
       if (response.ok) {
         const data = await response.json();
 
-        // Transform API response into your expected structure
-        const transformedPapers = data.map((item) => ({
-          id: item.paper.id,
-          title: item.paper.title,
-          abstract: item.paper.abstract,
-          keywords: item.paper.keywords,
-          authors: item.paper.author?.email,
-          date: new Date(item.paper.uploaded_at).toISOString().split("T")[0],
-          status:
-            item.paper.status.charAt(0).toUpperCase() +
-            item.paper.status.slice(1),
-          version: item.paper.version,
-          uploadedAt: new Date(item.paper.uploaded_at)
-            .toISOString()
-            .split("T")[0],
-          fileUrl: "/Hello.pdf", // update when API gives file
+        // Remove duplicates by paper_id and keep only the latest assignment
+        const uniquePapers = Object.values(
+          data.reduce((acc, item) => {
+            if (!acc[item.paper_id] || new Date(item.assigned_date) > new Date(acc[item.paper_id].assigned_date)) {
+              acc[item.paper_id] = item;
+            }
+            return acc;
+          }, {})
+        );
+
+        // Transform API response based on the actual structure
+        const transformedPapers = uniquePapers.map((item) => ({
+          id: item.paper_id,
+          assignmentId: item.id,
+          title: `Research Paper #${item.paper_id}`,
+          date: new Date(item.assigned_date).toISOString().split("T")[0],
+          status: "Pending",
+          uploadedAt: new Date(item.assigned_date).toISOString().split("T")[0],
+          fileUrl: item.file_url?.replace("http://127.0.0.1:8000", "https://yaji.onrender.com") || item.file_url,
         }));
 
         setAssignedPapers(transformedPapers);
@@ -86,12 +89,10 @@ export default function ReviewerDashboard() {
     if (!selectedPaper) return;
     setLoading(true);
     try {
-      // Convert recommendation value to lowercase since API expects
-      // pending | accept | reject | revise
       const status = reviewForm.recommendation.toLowerCase();
 
       const response = await fetch(
-        `https://yaji.onrender.com/api/reviewers/papers/${selectedPaper.id}/status?status=${status}`,
+        `https://yaji.onrender.com/api/reviewers/papers/${selectedPaper?.id}/status?status=${status}`,
         {
           method: "PATCH",
           headers: {
@@ -102,9 +103,8 @@ export default function ReviewerDashboard() {
       );
 
       if (response.ok) {
-        // ✅ Update UI after successful patch
         setAssignedPapers((prev) =>
-          prev.map((p) => (p.id === selectedPaper.id ? { ...p, status } : p))
+          prev.map((p) => (p?.id === selectedPaper?.id ? { ...p, status } : p))
         );
 
         alert(`Status updated to: ${status}`);
@@ -121,7 +121,6 @@ export default function ReviewerDashboard() {
     }
   };
 
-  // Logout icon SVG
   const LogoutIcon = () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -155,13 +154,13 @@ export default function ReviewerDashboard() {
     if (!status) return "";
     switch (status.toLowerCase()) {
       case "pending":
-        return "Pending";
+        return "Pending Review";
       case "accept":
         return "Accepted";
       case "reject":
         return "Rejected";
       case "revise":
-        return "Revised";
+        return "Needs Revision";
       default:
         return status;
     }
@@ -205,37 +204,62 @@ export default function ReviewerDashboard() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Assigned Papers
+            Assigned Papers ({assignedPapers.length})
           </h2>
           <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
         </div>
 
-        {/* Papers Grid */}
-        <div className="grid gap-6">
-          {assignedPapers.length > 0 ? (
-            assignedPapers.map((paper) => (
-              <div
-                key={paper.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+        {loading && assignedPapers.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <svg
+                className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
               >
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        {paper.title}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
-                        <div className="flex items-center gap-1">
-                          <svg
-                            className="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <p className="text-gray-600">Loading papers...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {assignedPapers.length > 0 ? (
+              assignedPapers.map((paper) => (
+                <div
+                  key={paper?.id}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="text-xl font-semibold text-gray-900">
+                            {paper.title}
+                          </h3>
+                          <span
+                            className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(
+                              paper?.status
+                            )}`}
                           >
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>By {paper.authors}</span>
+                            {getStatusLabel(paper?.status)}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
                           <svg
                             className="w-4 h-4"
                             fill="currentColor"
@@ -247,84 +271,72 @@ export default function ReviewerDashboard() {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <span>Uploaded {paper.uploadedAt}</span>
+                          <span>Assigned on {paper.uploadedAt}</span>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                          <p className="text-sm text-gray-600 mb-2">
+                            <span className="font-semibold text-gray-700">Paper ID:</span> {paper.id}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-semibold text-gray-700">Assignment ID:</span> {paper.assignmentId}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 leading-relaxed">
-                        {paper.abstract}
-                      </p>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {paper?.keywords?.split(", ").map((keyword, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200"
-                          >
-                            {keyword}
-                          </span>
-                        ))}
-                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                    <span
-                      className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
-                        paper?.status
-                      )}`}
-                    >
-                      {getStatusLabel(paper?.status)}
-                    </span>
-
-                    <div className="flex gap-3">
-                      <a
-                        href={paper.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                    <div className="flex justify-end items-center pt-4 border-t border-gray-100">
+                      <div className="flex gap-3">
+                        <a
+                          href={paper.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 border border-blue-200 font-medium"
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Download
-                      </a>
-                      <button
-                        onClick={() => handleOpenReview(paper)}
-                        className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          View Paper
+                        </a>
+                        <button
+                          onClick={() => handleOpenReview(paper)}
+                          className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
                         >
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                        Review
-                      </button>
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                          Submit Review
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+                <div className="text-gray-400 text-6xl mb-4">📄</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  No Papers Assigned
+                </h3>
+                <p className="text-gray-500">
+                  You don't have any papers to review at the moment.
+                </p>
               </div>
-            ))
-          ) : (
-            <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
-              <div className="text-gray-400 text-6xl mb-4">📄</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No Papers Assigned
-              </h3>
-              <p className="text-gray-500">
-                You don't have any papers to review at the moment.
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Enhanced Review Modal */}
@@ -335,11 +347,14 @@ export default function ReviewerDashboard() {
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Review Paper
+                    Submit Review
                   </h2>
                   <h3 className="text-lg text-gray-700 font-medium">
                     {selectedPaper.title}
                   </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Paper ID: {selectedPaper.id}
+                  </p>
                 </div>
                 <button
                   onClick={() => setReviewModalOpen(false)}
@@ -362,38 +377,9 @@ export default function ReviewerDashboard() {
               </div>
 
               <form onSubmit={handleSubmitReview} className="space-y-6">
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Review Feedback *
-                  </label>
-                  <textarea
-                    name="feedback"
-                    placeholder="Provide detailed feedback on the paper's methodology, findings, and overall quality..."
-                    value={reviewForm.feedback}
-                    onChange={handleChange}
-                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-colors"
-                    rows="6"
-                    required
-                  />
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Attach Review Document (Optional)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      name="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleChange}
-                      className="w-full p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-gray-300 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                  </div>
-                </div> */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Recommendation *
+                    Review Decision *
                   </label>
                   <select
                     name="recommendation"
@@ -411,6 +397,25 @@ export default function ReviewerDashboard() {
                       🔄 Revise - Needs improvements
                     </option>
                   </select>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex gap-3">
+                    <svg
+                      className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <p className="text-sm text-blue-800">
+                      Your review decision will update the paper's status. Please ensure you've thoroughly reviewed the paper before submitting.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
@@ -451,7 +456,7 @@ export default function ReviewerDashboard() {
                             d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        Submitting Review...
+                        Submitting...
                       </>
                     ) : (
                       "Submit Review"

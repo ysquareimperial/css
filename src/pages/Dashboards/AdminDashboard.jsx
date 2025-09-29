@@ -87,6 +87,36 @@ export default function AdminDashboard() {
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [selectedReviewer, setSelectedReviewer] = useState("");
 
+  // Function to handle file download
+  const handleDownloadPaper = async (fileUrl, fileName) => {
+    try {
+      // Replace localhost URL with production URL
+      const correctedUrl = fileUrl?.replace(
+        "http://127.0.0.1:8000",
+        "https://yaji.onrender.com"
+      );
+
+      // Create a temporary link element to trigger download
+      const link = document.createElement("a");
+      link.href = correctedUrl;
+      link.download = fileName || "paper-document";
+      link.target = "_blank";
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback: open in new tab with corrected URL
+      const correctedUrl = fileUrl?.replace(
+        "http://127.0.0.1:8000",
+        "https://yaji.onrender.com"
+      );
+      window.open(correctedUrl, "_blank");
+    }
+  };
+
   // Handle assignment
   const handleAssign = (paper) => {
     setSelectedPaper(paper);
@@ -372,6 +402,21 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Error Messages */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <p className="text-red-800">Error loading papers: {error}</p>
+          </div>
+        )}
+
+        {reviewersError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <p className="text-red-800">
+              Error loading reviewers: {reviewersError}
+            </p>
+          </div>
+        )}
+
         {/* Papers Section */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
@@ -380,50 +425,54 @@ export default function AdminDashboard() {
           <div className="h-1 w-20 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
         </div>
 
-        {/* Papers Grid */}
-        <div className="grid gap-6">
-          {allPapers.map((paper) => (
-            <div
-              key={paper.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {paper.title}
-                      </h3>
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                        v{paper.version}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
-                      <div className="flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>By {paper.author.email}</span>
+        {/* Loading State */}
+        {loading && allPapers.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
+            <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading papers...</p>
+          </div>
+        ) : allPapers.length === 0 ? (
+          <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+            <div className="text-gray-400 text-6xl mb-4">📄</div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No Papers Submitted
+            </h3>
+            <p className="text-gray-500">
+              Papers will appear here once authors submit them.
+            </p>
+          </div>
+        ) : (
+          /* Papers Grid */
+          <div className="grid gap-6">
+            {allPapers.map((paper) => (
+              <div
+                key={paper.id}
+                className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {paper.title}
+                        </h3>
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                          v{paper.version}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span>Submitted {paper.uploaded_at}</span>
-                      </div>
-                      {paper.assignedReviewer && (
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1">
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>
+                            By {paper.author?.email || "Unknown Author"}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-1">
                           <svg
                             className="w-4 h-4"
@@ -432,104 +481,66 @@ export default function AdminDashboard() {
                           >
                             <path
                               fillRule="evenodd"
-                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
                               clipRule="evenodd"
                             />
                           </svg>
-                          <span>Assigned to {paper.assignedReviewer}</span>
+                          <span>
+                            Submitted{" "}
+                            {new Date(paper.uploaded_at).toLocaleDateString()}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <p className="text-gray-700 mb-4 leading-relaxed">
-                      {paper.abstract}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {paper.keywords.split(", ").map((keyword, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-200"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
+                        {paper.assignedReviewer && (
+                          <div className="flex items-center gap-1">
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <span>Assigned to {paper.assignedReviewer}</span>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-gray-700 mb-4 leading-relaxed">
+                        {paper.abstract}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {paper.keywords.split(", ").map((keyword, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-200"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                  {/* <span
-                    className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
-                      paper.status
-                    )}`}
-                  >
-                    {paper.status}
-                  </span> */}
-
-                  <span
-                    className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
-                      paper?.status
-                    )}`}
-                  >
-                    {getStatusLabel(paper?.status)}
-                  </span>
-                  <div className="flex gap-3">
-                    <a
-                      href={"/Hello.pdf"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <span
+                      className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
+                        paper?.status
+                      )}`}
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      View Paper
-                    </a>
-
-                    {paper.assignedReviewer ? (
-                      <>
-                        <button
-                          onClick={() => handleAssign(paper)}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 border border-blue-200"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                          Reassign
-                        </button>
-                        <button
-                          onClick={() => handleRemoveReviewer(paper.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors duration-200 border border-red-200"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          Remove
-                        </button>
-                      </>
-                    ) : (
+                      {getStatusLabel(paper?.status)}
+                    </span>
+                    <div className="flex gap-3">
+                      {/* Simple Download Paper Button */}
                       <button
-                        onClick={() => handleAssign(paper)}
-                        className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                        onClick={() =>
+                          handleDownloadPaper(
+                            paper?.file_url,
+                            `${paper.title}.docx`
+                          )
+                        }
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
                       >
                         <svg
                           className="w-4 h-4"
@@ -538,19 +549,72 @@ export default function AdminDashboard() {
                         >
                           <path
                             fillRule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
                             clipRule="evenodd"
                           />
                         </svg>
-                        Assign Reviewer
+                        Download Paper
                       </button>
-                    )}
+
+                      {paper.assignedReviewer ? (
+                        <>
+                          <button
+                            onClick={() => handleAssign(paper)}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 border border-blue-200"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                            Reassign
+                          </button>
+                          <button
+                            onClick={() => handleRemoveReviewer(paper.id)}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors duration-200 border border-red-200"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Remove
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleAssign(paper)}
+                          className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Assign Reviewer
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Assignment Modal */}
@@ -594,45 +658,52 @@ export default function AdminDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Select Reviewer
                   </label>
-                  <div className="space-y-3">
-                    {reviewers.map((reviewer) => (
-                      <div
-                        key={reviewer.id}
-                        className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                          selectedReviewer === reviewer.email
-                            ? "border-indigo-500 bg-indigo-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                        onClick={() => setSelectedReviewer(reviewer.email)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            {/* <h4 className="font-semibold text-gray-900">
-                              {reviewer.name}
-                            </h4> */}
-                            <h4 className="font-semibold text-gray-900">
-                              {reviewer.email}
-                            </h4>
-                            {/* <p className="text-sm text-gray-600">
-                              {reviewer.email}
-                            </p> */}
-                            {/* <p className="text-sm text-gray-500 mt-1">
-                              Expertise: {reviewer.expertise}
-                            </p> */}
-                          </div>
-                          <div className="text-right">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${getWorkloadColor(
-                                reviewer.workload
-                              )}`}
-                            >
-                              {reviewer.assigned_papers_count} papers
-                            </span>
+                  {reviewersLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                      <p className="text-gray-500">Loading reviewers...</p>
+                    </div>
+                  ) : reviewers.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl">
+                      <p className="text-gray-500">No reviewers available</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {reviewers.map((reviewer) => (
+                        <div
+                          key={reviewer.id}
+                          className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                            selectedReviewer === reviewer.email
+                              ? "border-indigo-500 bg-indigo-50"
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                          onClick={() => setSelectedReviewer(reviewer.email)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">
+                                {reviewer.email}
+                              </h4>
+                              {reviewer.expertise && (
+                                <p className="text-sm text-gray-500 mt-1">
+                                  Expertise: {reviewer.expertise}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${getWorkloadColor(
+                                  reviewer.assigned_papers_count || 0
+                                )}`}
+                              >
+                                {reviewer.assigned_papers_count || 0} papers
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -645,7 +716,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={handleAssignSubmit}
-                  disabled={loading}
+                  disabled={loading || !selectedReviewer}
                   className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white 
              hover:from-indigo-600 hover:to-indigo-700 
              disabled:opacity-50 disabled:cursor-not-allowed

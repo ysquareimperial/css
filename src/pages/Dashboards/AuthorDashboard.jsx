@@ -38,10 +38,10 @@ export default function AuthorDashboard() {
           keywords: paper.keywords,
           authors: user?.email || "You",
           date: new Date(paper.uploaded_at).toISOString().split("T")[0],
-          status: paper.status.charAt(0).toUpperCase() + paper.status.slice(1), // Capitalize status
+          status: paper.status.charAt(0).toUpperCase() + paper.status.slice(1),
           version: paper.version,
           uploadedAt: new Date(paper.uploaded_at).toISOString().split("T")[0],
-          fileUrl: "/Hello.pdf", // Update based on your API
+          fileUrl: paper.file_url, // Keep the original file_url from API
         }));
 
         setSubmissions(transformedPapers);
@@ -60,35 +60,6 @@ export default function AuthorDashboard() {
     fetchMyPapers();
   }, []);
 
-  // Temporary dummy submissions
-  // const [submissions, setSubmissions] = useState([
-  //   {
-  //     id: 1,
-  //     title: "AI in Education",
-  //     abstract:
-  //       "This paper explores how AI is shaping education systems worldwide.",
-  //     authors: "John Doe, Jane Smith",
-  //     keywords: "AI, Education, Machine Learning",
-  //     date: "2025-08-21",
-  //     status: "Pending Review",
-  //     version: 1,
-  //     uploadedAt: "2025-08-21",
-  //     fileUrl: "/Hello.pdf",
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Blockchain for Healthcare",
-  //     abstract: "This research studies blockchain use cases in healthcare.",
-  //     authors: "Alice Johnson",
-  //     keywords: "Blockchain, Healthcare, Security",
-  //     date: "2025-08-15",
-  //     status: "Accepted",
-  //     version: 2,
-  //     uploadedAt: "2025-08-15",
-  //     fileUrl: "/Hello.pdf",
-  //   },
-  // ]);
-
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -106,36 +77,6 @@ export default function AuthorDashboard() {
     });
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-
-  //   if (!form.file) {
-  //     alert("Please select a file");
-  //     return;
-  //   }
-
-  //   // TODO: Replace with API call
-  //   console.log("Uploading submission:", form);
-
-  //   // Simulate adding new submission
-  //   const newSubmission = {
-  //     id: submissions.length + 1,
-  //     title: form.title || "Untitled Paper",
-  //     abstract: form.abstract,
-  //     authors: "You",
-  //     keywords: form.keywords,
-  //     date: new Date().toISOString().split("T")[0],
-  //     status: "Pending Review",
-  //     version: 1,
-  //     uploadedAt: new Date().toISOString().split("T")[0],
-  //     fileUrl: "/Hello.pdf",
-  //   };
-
-  //   setSubmissions([newSubmission, ...submissions]);
-  //   setForm({ title: "", abstract: "", keywords: "", file: null });
-  //   setShowModal(false);
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -144,7 +85,7 @@ export default function AuthorDashboard() {
       return;
     }
 
-    setLoading(true); // You'll need to add loading state
+    setLoading(true);
 
     try {
       // Create FormData for multipart/form-data
@@ -163,7 +104,7 @@ export default function AuthorDashboard() {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${user?.access_token}`, // Use your auth token
+            Authorization: `Bearer ${user?.access_token}`,
           },
           body: formData,
         }
@@ -180,16 +121,19 @@ export default function AuthorDashboard() {
           keywords: form.keywords,
           authors: user?.email || "You",
           date: new Date(data.uploaded_at).toISOString().split("T")[0],
-          status: data.status,
+          status: data.status.charAt(0).toUpperCase() + data.status.slice(1),
           version: data.version,
           uploadedAt: new Date(data.uploaded_at).toISOString().split("T")[0],
-          fileUrl: "/Hello.pdf", // Update this based on your API response
+          fileUrl: data.file_url, // Use the actual file_url from response
         };
 
         setSubmissions([newSubmission, ...submissions]);
         setForm({ title: "", abstract: "", keywords: "", file: null });
         setShowModal(false);
         alert("Paper submitted successfully!");
+
+        // Refresh the papers list to get updated data
+        fetchMyPapers();
       } else {
         const errorData = await response.json();
         alert(errorData.detail || "Failed to submit paper");
@@ -205,6 +149,25 @@ export default function AuthorDashboard() {
   const handleView = (submission) => {
     setSelectedSubmission(submission);
     setViewModalOpen(true);
+  };
+
+  // Function to handle file download
+  const handleDownload = (fileUrl, fileName) => {
+    // Create a temporary link element
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.download = fileName || "document";
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Function to check if file can be previewed
+  const canPreviewFile = (fileUrl) => {
+    if (!fileUrl) return false;
+    const extension = fileUrl.split(".").pop()?.toLowerCase();
+    return ["pdf"].includes(extension);
   };
 
   // Logout icon SVG
@@ -315,24 +278,12 @@ export default function AuthorDashboard() {
 
         {/* Submissions Grid */}
         <div className="grid gap-6">
-          {/* {submissions.length > 0 ? (
-            submissions.map((paper) => (
-              <div
-                key={paper.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
-              >
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {paper.title}
-                        </h3>
-                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                          v{paper.version}
-                        </span>
-                      </div> */}
-          {submissions.length > 0 ? (
+          {loading && submissions.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
+              <div className="animate-spin h-8 w-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading your submissions...</p>
+            </div>
+          ) : submissions.length > 0 ? (
             submissions.map((paper) => (
               <div
                 key={paper.id}
@@ -392,14 +343,6 @@ export default function AuthorDashboard() {
                   </div>
 
                   <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                    {/* <span
-                      className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
-                        paper.status
-                      )}`}
-                    >
-                      {paper.status}
-                    </span> */}
-
                     <span
                       className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(
                         paper?.status
@@ -579,12 +522,7 @@ export default function AuthorDashboard() {
                   >
                     Cancel
                   </button>
-                  {/* <button
-                    type="submit"
-                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-                  >
-                    Submit Paper
-                  </button> */}
+
                   <button
                     type="submit"
                     disabled={loading}
@@ -716,34 +654,149 @@ export default function AuthorDashboard() {
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    Document Preview
+                    Document
                   </h3>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <iframe
-                      src={selectedSubmission.fileUrl}
-                      title="Document Preview"
-                      className="w-full h-96 rounded-lg border border-gray-200"
-                    />
-                    <div className="flex justify-center mt-4">
-                      <a
-                        href={selectedSubmission.fileUrl}
-                        download
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Download Document
-                      </a>
-                    </div>
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    {selectedSubmission.fileUrl ? (
+                      <>
+                        {canPreviewFile(selectedSubmission.fileUrl) ? (
+                          <div className="mb-4">
+                            <iframe
+                              src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                                selectedSubmission.fileUrl
+                              )}&embedded=true`}
+                              title="Document Preview"
+                              className="w-full h-96 rounded-lg border border-gray-200"
+                              onError={(e) => {
+                                console.log(
+                                  "Iframe failed to load, showing fallback"
+                                );
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "block";
+                              }}
+                            />
+                            <div
+                              style={{ display: "none" }}
+                              className="w-full h-96 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center"
+                            >
+                              <div className="text-center">
+                                <svg
+                                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <p className="text-gray-600 mb-2">
+                                  Preview not available
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Click download to view the document
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-96 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center mb-4">
+                            <div className="text-center">
+                              <svg
+                                className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              <p className="text-gray-600 mb-2">
+                                Document Preview
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Click download to view the document
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex justify-center gap-3">
+                          <button
+                            onClick={() =>
+                              handleDownload(
+                                selectedSubmission.fileUrl,
+                                selectedSubmission.title
+                              )
+                            }
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Download Document
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              window.open(selectedSubmission.fileUrl, "_blank")
+                            }
+                            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z"
+                                clipRule="evenodd"
+                              />
+                              <path
+                                fillRule="evenodd"
+                                d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Open in New Tab
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-96 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center">
+                        <div className="text-center">
+                          <svg
+                            className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <p className="text-gray-600 mb-2">
+                            No document available
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            The document could not be found
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
